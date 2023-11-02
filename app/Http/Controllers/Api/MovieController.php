@@ -4,28 +4,49 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MovieRequest;
+use App\Http\Resources\MovieDetailResource;
 use App\Http\Resources\MovieResource;
 use App\Models\Cast;
+use App\Models\Genre;
 use App\Models\Movie;
 use App\Models\Movie_cast;
 use App\Models\Movie_detail;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\StoreImg;
+use Carbon\Carbon;
+use Ramsey\Uuid\Type\Integer;
 
 class MovieController extends Controller
 {
-    public function create(MovieRequest $request){
+    use StoreImg;
+    private $movie;
+    private $cast;
+    private $movie_detail;
+    private $genre;
+    public function __construct(Movie $movie, Cast $cast, Movie_detail $movie_detail, Genre $genre){
+        $this->movie = $movie;
+        $this->cast = $cast;
+        $this->movie_detail = $movie_detail;
+        $this->genre = $genre;
+    }
+    public function createMovie(MovieRequest $request){
         try{
             DB::beginTransaction();
-            $movie = Movie::create([
-                'title' => $request->title,
-                'post_path' => $request->post_path,
-                'backdrop_path' => $request->backdrop_path,
-                'release' => $request->release,
-            ]);
+            $minutes = $request->time;
+            $formatted_time = floor($minutes / 60) . ':'. ($minutes -   floor($minutes / 60) * 60).':00';
 
-            Movie_detail::create([
+            $uploadPoster = $this->imgUpload($request, 'post_path', 'movie');
+            $uploadBackdrop = $this->imgUpload($request, 'backdrop_path', 'movie');
+            $movie = $this->movie->create([
+                'title' => $request->title,
+                'post_path' => $uploadPoster,
+                'backdrop_path' => $uploadBackdrop,
+                'release' => $request->release,
+                'time' => $formatted_time,
+            ]);
+            $movieDetail = $this->movie_detail->create([
                 'movie_id' => $movie['id'],
                 'title' => $movie['title'],
                 'overview' =>  $request->overview ?? '',
@@ -33,37 +54,36 @@ class MovieController extends Controller
                 'vote_average' => 0,
                 'status'  => $request->status
             ]);
+            if($request->casts){
+                foreach( $request->casts as $value){
+                    $cast = $this->cast->find($value);
+                    $castID[] = $cast->id;
+                }
+                $movie->movie_cast()->attach($castID);
+            }
+            if($request->genres){
+                foreach( $request->genres as $value){
+                    $genre = $this->genre->find($value);
+                    $genreID[] = $genre->id;
+                }
+                $movieDetail->movie_genre()->attach($genreID);
+            }
             DB::commit();
-            $this->addCast($movie['id'], $request->cast_id);
-            return new MovieResource($movie);
+            return response()->json([
+                'status' => 200,
+                'message' => 'Created successfully',
+            ]);
         }catch(Exception $e){
             DB::rollBack();
             return $e->getMessage();
         }
-
-    }
-
-    public function addCast($idmovie, $idcast){
-        $checkCast = Cast::where('id', $idcast);
-        if($checkCast) {
-            Movie_cast::create([
-                'movie_id' => $idmovie,
-                'cast_id' =>  $idcast
-            ]);
-        }else{
-            response()->json([
-                'status' => 401,
-                'message' => 'Cast not found',
-            ]);
-        }
-        
     }
 
 
-    public function info($id){
-        $movie = Movie::find($id); 
-        if($movie){
-            return new MovieResource($movie);
+    public function movieDetail($id){
+        $detail = $this->movie_detail->where('movie_id', $id)->first();
+        if($detail){
+            return new MovieDetailResource($detail);
         }
         return  response()->json([
             'status' => 404,

@@ -14,7 +14,7 @@ class Movie extends Model
 
     protected $table = 'movies';
 
-    protected $fillable = ['title', 'post_path', 'backdrop_path', 'release'];
+    protected $fillable = ['title', 'post_path', 'backdrop_path', 'release', 'time'];
 
     public function movie_detail(): HasOne{
         return $this->hasOne(Movie_detail::class);
@@ -25,8 +25,10 @@ class Movie extends Model
     }
 
     public function movie_cast(): BelongsToMany{
-        return $this->belongsToMany(Cast::class, 'movie_casts', 'movie_id', 'cast_id');
-    }
+        return $this
+            ->belongsToMany(Cast::class, 'movie_casts', 'movie_id', 'cast_id');
+            
+        }
 
     public function schedule(): HasMany{
         return $this->hasMany(Schedule::class);

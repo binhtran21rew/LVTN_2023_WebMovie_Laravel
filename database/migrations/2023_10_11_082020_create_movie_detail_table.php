@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->integer('movie_id');
             $table->string('title');
-            $table->string('overview');
+            $table->text('overview');
             $table->integer('vote_count');
             $table->float('vote_average');
             $table->string('status');

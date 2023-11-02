@@ -48,7 +48,6 @@ class AuthController extends Controller
             'message' => 'Logout Successfully'
         ]);
     
-        // return auth('sanctum')->check();
 
     }
 

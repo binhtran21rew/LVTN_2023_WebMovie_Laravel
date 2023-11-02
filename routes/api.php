@@ -3,6 +3,10 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MovieController;
 use App\Http\Controllers\Api\CastController;
+use App\Http\Controllers\Api\Trailers;
+use App\Http\Controllers\Api\GenreController;
+
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,21 +30,34 @@ Route::prefix('web')->group(function () {
     Route::get('/movies/getall', [MovieController::class, 'getAll']);
 });
 
+
+Route::get('/movie/detail/{id}', [MovieController::class, 'movieDetail'])->name('get-movie_id-detail');
+Route::get('/cast/detail/{id}',[CastController::class, 'detail'])->name('get-cast_id-detail');
+Route::get('/movie/getAll', [MovieController::class, 'getAll'])->name('getall-movie');
+Route::get('/cast/getAll', [CastController::class, 'getAll'])->name('getall-cast');
+Route::get('/trailer/getTrailer/{id}', [Trailers::class, 'getTrailer'])->name('get-trailer_id-detail');
+Route::get('/genre/getAll', [GenreController::class, 'getAll'])->name('getall-genre');
+
+
+
+
 Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('/checkLogin', function(){
         return response()->json(['message' => 'You have been logged in', 'status' => 200], 200);
     });
 
-    //Controller Movie =========================================
-    Route::post('/movie/create', [MovieController::class, 'create'])->name('create-movie');
-    Route::get('/movie/info/{id}', [MovieController::class, 'info'])->name('info-movie');
-    // =========================================================
+    //Controller Movie ===========================================================
+    Route::post('/movie/createMovie', [MovieController::class, 'createMovie'])->name('create-movie');
 
-    //Controller Cast ==========================================
-    Route::post('/cast/create', [CastController::class, 'create'])->name('create-cast');
 
-    // =========================================================
+    //Controller Cast ============================================================
+    Route::post('/cast/createCast', [CastController::class, 'createCast'])->name('create-cast');
+    
+    //Controller Trailer =========================================================
+    Route::post('trailer/createTrailer', [Trailers::class, 'createTrailer'])->name('create-trailer');
 
+    //Controller Genre ============================================================
+    Route::post('genre/createGenre', [GenreController::class, 'createGenre'])->name('create-genre');
 
 });
 

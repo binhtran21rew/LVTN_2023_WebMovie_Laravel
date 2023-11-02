@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('rooms', function (Blueprint $table) {
             $table->integer('id')->unique()->autoIncrement();
             $table->string('name');
+            $table->integer('status');
             $table->timestamps();
         });
     }

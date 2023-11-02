@@ -2,13 +2,11 @@
 
 namespace App\Http\Requests;
 
-
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 use App\Http\Helper\Helper;
 
-
-class MovieRequest extends FormRequest
+class TrailerRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,16 +24,8 @@ class MovieRequest extends FormRequest
     public function rules(): array
     {
         return [
-           'title' => 'required',
-           'post_path' => 'required',
-           'backdrop_path' => 'required',
-           'release' => 'required',
-           'overview' => 'string',
-           'vote_count' => 'integer',
-           'vote_average' => 'float',
-           'status' => 'required',
-           'casts' => 'required',
-           'time' => 'required',
+            'key' => 'required|string',
+            'movie_id' => 'required',
         ];
     }
 

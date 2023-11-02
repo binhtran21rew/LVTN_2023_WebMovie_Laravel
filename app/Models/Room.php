@@ -12,7 +12,7 @@ class Room extends Model
 
     protected $table = 'rooms';
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'status'];
 
     public function seat(): HasMany{
         return $this->hasMany(Seat::class);

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('post_path');
             $table->string('backdrop_path');
             $table->date('release');
+            $table->time('time');
             $table->timestamps();
         });
     }

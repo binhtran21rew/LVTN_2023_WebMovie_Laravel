@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\MovieController;
 use App\Http\Controllers\Api\CastController;
 use App\Http\Controllers\Api\Trailers;
 use App\Http\Controllers\Api\GenreController;
+use App\Http\Controllers\Api\RoomController;
+use App\Http\Controllers\Api\ScheduleController;
 
 
 use Illuminate\Http\Request;
@@ -37,7 +39,7 @@ Route::get('/movie/getAll', [MovieController::class, 'getAll'])->name('getall-mo
 Route::get('/cast/getAll', [CastController::class, 'getAll'])->name('getall-cast');
 Route::get('/trailer/getTrailer/{id}', [Trailers::class, 'getTrailer'])->name('get-trailer_id-detail');
 Route::get('/genre/getAll', [GenreController::class, 'getAll'])->name('getall-genre');
-
+Route::get('/room/getAll', [RoomController::class, 'getAll'])->name('getall-room');
 
 
 
@@ -59,6 +61,12 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     //Controller Genre ============================================================
     Route::post('genre/createGenre', [GenreController::class, 'createGenre'])->name('create-genre');
 
+    //Controller Room =============================================================
+    Route::post('room/createRoom', [RoomController::class, 'createRoom'])->name('create-room');
+
+
+    //Controller Schedule ==========================================================
+    Route::post('schedule/createSchedule', [ScheduleController::class, 'createSchedule'])->name('create-schedule');
 });
 
 

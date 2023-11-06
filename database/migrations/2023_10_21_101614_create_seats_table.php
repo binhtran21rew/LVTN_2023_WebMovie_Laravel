@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('seats', function (Blueprint $table) {
             $table->integer('id')->unique()->autoIncrement();
             $table->integer('room_id');
-            $table->integer('row');
             $table->integer('number');
             $table->timestamps();
 

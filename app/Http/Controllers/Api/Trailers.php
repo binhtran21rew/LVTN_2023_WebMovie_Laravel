@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TrailerRequest;
+use App\Http\Resources\TrailerResource;
 use App\Models\Movie;
 use App\Models\Trailer;
 use Exception;
@@ -51,5 +52,15 @@ class Trailers extends Controller
         if($checkMovie){
             return $this->trailer->where('movie_id', $id)->first();
         }
+    }
+
+    public function getAllTrailer(){
+        $trailers = $this->trailer->all();
+
+        foreach($trailers as $trailer){
+            $data[] = new TrailerResource($trailer);
+        }
+
+        return $data;
     }
 }

@@ -52,21 +52,21 @@ class ScheduleController extends Controller
             ->get()
             ->count();
         $getCheckSchedule = $this->schedule
-        ->where('date', $date)
-        ->where('room_id', $request->room_id)
-        ->where('time_start', '<=', $setTimeStart)
-        ->where('time_end', '>=', $setTimeStart)
+            ->where('date', $date)
+            ->where('room_id', $request->room_id)
+            ->where('time_start', '<=', $setTimeStart)
+            ->where('time_end', '>=', $setTimeStart)
 
-        ->orwhere('date', $date)
-        ->where('room_id', $request->room_id)
-        ->where('time_start', '<=', $setTimeEnd)
-        ->where('time_end', '>=', $setTimeEnd)
+            ->orwhere('date', $date)
+            ->where('room_id', $request->room_id)
+            ->where('time_start', '<=', $setTimeEnd)
+            ->where('time_end', '>=', $setTimeEnd)
 
-        ->orwhere('date', $date)
-        ->where('room_id', $request->room_id)
-        ->where('time_start', '<=', $setTimeEnd)
-        ->where('time_end', '>=', $setTimeStart)
-        ->get();
+            ->orwhere('date', $date)
+            ->where('room_id', $request->room_id)
+            ->where('time_start', '<=', $setTimeEnd)
+            ->where('time_end', '>=', $setTimeStart)
+            ->get();
 
         if($checkRoom && $checkMovie){
             if($checkSchedule > 0){
@@ -96,6 +96,16 @@ class ScheduleController extends Controller
             'status' => 401,
             'message' => 'Room or movie not found',
         ]);
-     }
+    }
+
+    public function getAllSchedule(){
+        $schedules =  $this->schedule->all();
+
+        foreach($schedules as $schedule){
+            $data[] = new ScheduledResource($schedule);
+        }
+
+        return $data;
+    }
 }
 

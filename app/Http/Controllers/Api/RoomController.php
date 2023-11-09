@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RoomRequest;
+use App\Http\Resources\RoomResource;
+use App\Http\Resources\SeatResource;
 use App\Models\Room;
 use App\Models\Seat;
 use Illuminate\Http\Request;
@@ -47,7 +49,19 @@ class RoomController extends Controller
     }
 
     public function getAll(){
-        return $this->room->all();
+        $rooms = $this->room->all();
+
+        foreach( $rooms as  $room){
+            $data[] = new RoomResource($room);
+        }
+
+        return $data;
+    }
+
+    public function getAvailable(){
+        $rooms = $this->room->where('status', '0')->get();
+
+        return $rooms;
     }
 }
 

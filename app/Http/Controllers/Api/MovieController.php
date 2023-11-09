@@ -90,10 +90,32 @@ class MovieController extends Controller
             'message' => 'Not found movie'
         ]);
     }
+    public function getAdminMovie(){
+        $movies = $this->movie_detail->all();
 
+        foreach($movies as $movie){
+            $data[] = new MovieDetailResource($movie);
+        }
+
+        return $data;
+   
+
+    }
     public function getAll(){
         $movies = Movie::all();
         
+        foreach($movies as $movie){
+            $data[] = new MovieResource($movie);
+        }
+
+        return $data;
+    }
+
+    public function getPage($page){
+        $limitPerPage = 6;
+        $newPage = (($page - 1) * $limitPerPage);
+
+        $movies = $this->movie->offset($newPage)->limit($limitPerPage)->get();
         foreach($movies as $movie){
             $data[] = new MovieResource($movie);
         }

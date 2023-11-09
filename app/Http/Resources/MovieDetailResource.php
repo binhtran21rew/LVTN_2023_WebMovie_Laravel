@@ -16,10 +16,11 @@ class MovieDetailResource extends JsonResource
     {
         return [
             'id' => $this->movie_id,
-            'title' => $this->title,
+            'title' => $this->movie['title'],
             'backdrop_path' => $this->movie['backdrop_path'],
             'poster_path' => $this->movie['poster_path'],
             'overview' => $this->overview,
+            'time' => $this->movie['time'],
             'release' => $this->movie['release'],
             'vote_count' => $this->vote_count,
             'vote_average' => $this->vote_average,

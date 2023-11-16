@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleRequest;
+use App\Http\Resources\CalendarFormat;
 use App\Http\Resources\ScheduledResource;
 use App\Models\Movie;
 use App\Models\Room;
@@ -99,12 +100,19 @@ class ScheduleController extends Controller
     }
 
     public function getAllSchedule(){
-        $schedules =  $this->schedule->all();
+        $schedules = $this->schedule->load(['room', 'movie'])->get();
 
         foreach($schedules as $schedule){
             $data[] = new ScheduledResource($schedule);
         }
+        return $data;
+    }
 
+    public function getSchedule($room){
+        $schedules = $this->schedule->where('room_id', $room)->get();
+        foreach($schedules as $schedule){
+            $data[] = new CalendarFormat($schedule);
+        }
         return $data;
     }
 }

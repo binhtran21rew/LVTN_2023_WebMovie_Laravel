@@ -55,7 +55,7 @@ class Trailers extends Controller
     }
 
     public function getAllTrailer(){
-        $trailers = $this->trailer->all();
+        $trailers = $this->trailer->load('movie')->get();
 
         foreach($trailers as $trailer){
             $data[] = new TrailerResource($trailer);

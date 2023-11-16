@@ -32,20 +32,21 @@ Route::prefix('web')->group(function () {
     Route::get('/movies/getall', [MovieController::class, 'getAll']);
 });
 
-Route::get('/movie/getmovies/{page}', [MovieController::class, 'getPage'])->name('getall-movie');
-Route::get('/movie/detail/{id}', [MovieController::class, 'movieDetail'])->name('get-movie_id-detail');
-Route::get('/movie/getAll', [MovieController::class, 'getAll'])->name('getall-movie');
+Route::get('/Movie/page/{page}', [MovieController::class, 'getPage'])->name('getall-movie');
+Route::get('/Movie/detail/{id}', [MovieController::class, 'movieDetail'])->name('get-movie_id-detail');
+Route::get('/Movie/getAll', [MovieController::class, 'getAll'])->name('getall-movie');
+Route::get('/Movie/getType/{type}', [MovieController::class, 'getTypeMovie'])->name('get-type-movie');
 
-Route::get('/cast/detail/{id}',[CastController::class, 'detail'])->name('get-cast_id-detail');
-Route::get('/cast/getAll', [CastController::class, 'getAll'])->name('getall-cast');
+Route::get('/Cast/detail/{id}',[CastController::class, 'detail'])->name('get-cast_id-detail');
+Route::get('/Cast/getAll', [CastController::class, 'getAll'])->name('getall-cast');
 
-Route::get('/trailer/getTrailer/{id}', [Trailers::class, 'getTrailer'])->name('get-trailer_id-detail');
-Route::get('/trailer/getAll', [Trailers::class, 'getAllTrailer'])->name('create-trailer');
+Route::get('/Trailer/getTrailer/{id}', [Trailers::class, 'getTrailer'])->name('get-trailer_id-detail');
+Route::get('/Trailer/getAll', [Trailers::class, 'getAllTrailer'])->name('create-trailer');
 
-Route::get('/genre/getAll', [GenreController::class, 'getAll'])->name('getall-genre');
+Route::get('/Genre/getAll', [GenreController::class, 'getAll'])->name('getall-genre');
 
-Route::get('/room/getAll', [RoomController::class, 'getAll'])->name('getall-room');
-Route::get('/room/getAvailable', [RoomController::class, 'getAvailable'])->name('getall-room');
+Route::get('/Room/getAll', [RoomController::class, 'getAll'])->name('getall-room');
+Route::get('/Room/getAvailable', [RoomController::class, 'getAvailable'])->name('getall-room');
 
 
 Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
@@ -54,25 +55,27 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     });
 
     //Controller Movie ===========================================================
-    Route::post('/movie/createMovie', [MovieController::class, 'createMovie'])->name('create-movie');
-    Route::get('/movie/getMovie', [MovieController::class, 'getAdminMovie'])->name('getAdmin-movie');
+    Route::post('/Movie/createMovie', [MovieController::class, 'createMovie'])->name('create-movie');
+    Route::get('/Movie/getMovie', [MovieController::class, 'getAdminMovie'])->name('getAdmin-movie');
 
     //Controller Cast ============================================================
-    Route::post('/cast/createCast', [CastController::class, 'createCast'])->name('create-cast');
+    Route::post('/Cast/createCast', [CastController::class, 'createCast'])->name('create-cast');
     
     //Controller Trailer =========================================================
-    Route::post('trailer/createTrailer', [Trailers::class, 'createTrailer'])->name('create-trailer');
+    Route::post('Trailer/createTrailer', [Trailers::class, 'createTrailer'])->name('create-trailer');
 
     //Controller Genre ============================================================
-    Route::post('genre/createGenre', [GenreController::class, 'createGenre'])->name('create-genre');
+    Route::post('Genre/createGenre', [GenreController::class, 'createGenre'])->name('create-genre');
 
     //Controller Room =============================================================
-    Route::post('room/createRoom', [RoomController::class, 'createRoom'])->name('create-room');
+    Route::post('Room/createRoom', [RoomController::class, 'createRoom'])->name('create-room');
 
 
     //Controller Schedule ==========================================================
-    Route::post('schedule/createSchedule', [ScheduleController::class, 'createSchedule'])->name('create-schedule');
-    Route::get('schedule/getAllSchedule', [ScheduleController::class, 'getAllSchedule'])->name('getAll-schedule');
+    Route::post('Schedule/createSchedule', [ScheduleController::class, 'createSchedule'])->name('create-schedule');
+    Route::get('Schedule/getAllSchedule', [ScheduleController::class, 'getAllSchedule'])->name('getAll-schedule');
+    Route::get('Schedule/getSchedule/{room}', [ScheduleController::class, 'getSchedule'])->name('getSchedule');
+
 });
 
 

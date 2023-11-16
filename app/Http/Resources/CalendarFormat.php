@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TrailerResource extends JsonResource
+class CalendarFormat extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,9 +16,9 @@ class TrailerResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'movie_id' => $this->movie_id,
-            'name_movie' => $this->movie->title,
-            'key' => $this->key,
+            'title' =>$this->movie['title'],
+            'start' => $this->date.'T'.$this->time_start,
+            'end' => $this->date.'T'.$this->time_end
         ];
     }
 }

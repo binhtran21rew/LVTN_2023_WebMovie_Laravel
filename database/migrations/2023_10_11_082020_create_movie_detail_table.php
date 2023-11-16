@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('overview');
             $table->integer('vote_count');
             $table->float('vote_average');
-            $table->string('status');
+            $table->integer('status');
             $table->timestamps();
 
             $table->foreign('movie_id')->references('id')->on('movies');

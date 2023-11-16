@@ -16,8 +16,8 @@ class ScheduledResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'room' => $this->room['name'],
-            'movie' => $this->movie['title'],
+            'room' => $this->room->name,
+            'movie' => $this->movie->title,
             'date' => $this->date,
             'price' => $this->price,
             'time_start' => $this->time_start,

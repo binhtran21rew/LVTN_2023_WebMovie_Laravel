@@ -49,13 +49,13 @@ class RoomController extends Controller
     }
 
     public function getAll(){
-        $rooms = $this->room->all();
+        $rooms = $this->room->load('seat')->get();
 
         foreach( $rooms as  $room){
             $data[] = new RoomResource($room);
         }
 
-        return $data;
+        return $data ;
     }
 
     public function getAvailable(){

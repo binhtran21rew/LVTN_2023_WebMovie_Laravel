@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\StoreImg;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Ramsey\Uuid\Type\Integer;
 
 class MovieController extends Controller
@@ -81,7 +82,7 @@ class MovieController extends Controller
 
 
     public function movieDetail($id){
-        $detail = $this->movie_detail->where('movie_id', $id)->first();
+        $detail = $this->movie_detail->load(['movie', 'movie_genre'])->where('id', $id)->first();
         if($detail){
             return new MovieDetailResource($detail);
         }
@@ -91,26 +92,22 @@ class MovieController extends Controller
         ]);
     }
     public function getAdminMovie(){
-        $movies = $this->movie_detail->all();
-
-        foreach($movies as $movie){
-            $data[] = new MovieDetailResource($movie);
-        }
-
+        // ray()->queries();
+        $data = Cache::remember('allMovieAdmin', 30, function(){
+            return $this->movie_detail->load(['movie', 'movie_genre'])->get()->map(function($d){
+                return new MovieDetailResource($d);
+            });
+        });
         return $data;
-   
-
     }
     public function getAll(){
-        $movies = Movie::all();
-        
-        foreach($movies as $movie){
-            $data[] = new MovieResource($movie);
-        }
-
+        $data = Cache::remember('allMovieAdmin', 30, function(){
+            return $this->movie->load('movie_detail')->get()->map(function($movie){
+                return new MovieResource($movie);
+           });
+        });
         return $data;
     }
-
     public function getPage($page){
         $limitPerPage = 6;
         $newPage = (($page - 1) * $limitPerPage);
@@ -119,6 +116,16 @@ class MovieController extends Controller
         foreach($movies as $movie){
             $data[] = new MovieResource($movie);
         }
+
+        return $data;
+    }
+
+    public function getTypeMovie($type){
+        $movies = $this->movie_detail->where('status', $type)->get();
+
+        $data = $movies->map(function($movie){
+            return new MovieDetailResource($movie);
+        });
 
         return $data;
     }

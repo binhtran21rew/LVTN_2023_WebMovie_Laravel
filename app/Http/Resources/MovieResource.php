@@ -20,11 +20,11 @@ class MovieResource extends JsonResource
             'backdrop_path' => $this->backdrop_path,
             'poster_path' => $this->post_path,
             'time' => $this->time,
-            'overview' => $this->movie_detail['overview'] ?? '',
+            'overview' => $this->movie_detail->overview ?? '',
             'release' => $this->release,
-            'vote_count' => $this->movie_detail['vote_count'] ?? '',
-            'vote_average' => $this->movie_detail['vote_average'] ?? '',
-            'status' => $this->movie_detail['status'] ?? '',
+            'vote_count' => $this->movie_detail->vote_count ?? '',
+            'vote_average' => $this->movie_detail->vote_average ?? '',
+            'status' => $this->movie_detail->status ?? '',
         ];
     }
 }

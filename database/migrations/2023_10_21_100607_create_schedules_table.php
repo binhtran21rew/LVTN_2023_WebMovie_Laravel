@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('date');
             $table->time('time_start');
             $table->time('time_end');
+            $table->integer('status');
             $table->timestamps();
 
             $table->foreign('movie_id')->references('id')->on('movies');

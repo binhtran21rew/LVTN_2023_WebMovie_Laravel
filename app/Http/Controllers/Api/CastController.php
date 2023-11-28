@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\StoreImg;
+use Illuminate\Support\Facades\File;
 
 class CastController extends Controller
 {
@@ -51,5 +52,32 @@ class CastController extends Controller
         if($checkMovie){
             return new CastResource($checkMovie);
         }
+    }
+
+    public function updateCast(Request $request){
+        $checkCast = $this->cast->find($request->id);
+        if($checkCast){
+            $uploadImage = $this->imgUpload($request, 'profile_path', 'cast');
+            $data = [
+                'name' => $request->name,
+            ];
+            if(!empty( $uploadImage)){
+                File::delete(public_path($checkCast->profile_path));
+                $data['profile_path'] = $uploadImage;
+            }
+
+            
+            $checkCast->update($data);
+            return response()->json([
+                'status' => 200,
+                'message' => 'Updated successfully',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 401,
+            'message' => 'Id cast not found',
+
+        ]);
     }
 }

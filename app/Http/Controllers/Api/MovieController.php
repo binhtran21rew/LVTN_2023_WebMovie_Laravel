@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use App\Traits\StoreImg;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Ramsey\Uuid\Type\Integer;
 
 class MovieController extends Controller
@@ -56,7 +57,7 @@ class MovieController extends Controller
                 'status'  => $request->status
             ]);
             if($request->casts){
-                foreach( $request->casts as $value){
+                foreach($request->casts as $value){
                     $cast = $this->cast->find($value);
                     $castID[] = $cast->id;
                 }
@@ -82,9 +83,16 @@ class MovieController extends Controller
 
 
     public function movieDetail($id){
+        $cache = Cache::get('movie_detail_'.$id);
+        if(isset($cache)){
+            return $cache;
+        }
         $detail = $this->movie_detail->load(['movie', 'movie_genre'])->where('id', $id)->first();
         if($detail){
-            return new MovieDetailResource($detail);
+            Cache::remember('movie_detail_'.$id, 60*60*24, function() use ($detail){
+                return new MovieDetailResource($detail);
+            });
+            return $cache;
         }
         return  response()->json([
             'status' => 404,
@@ -92,21 +100,37 @@ class MovieController extends Controller
         ]);
     }
     public function getAdminMovie(){
-        // ray()->queries();
-        $data = Cache::remember('allMovieAdmin', 30, function(){
-            return $this->movie_detail->load(['movie', 'movie_genre'])->get()->map(function($d){
+
+        $cache = Cache::get('allMovieAdmin');
+        if(isset($cache)){
+            return $cache;
+        }
+
+        Cache::remember('allMovieAdmin', 60*60*24, function(){
+            return $this->movie_detail->load(['movie.movie_cast', 'movie_genre'])->get()->map(function($d){
                 return new MovieDetailResource($d);
             });
         });
-        return $data;
+
+        // Cache::delete('allMovieAdmin');
+        return $cache;
     }
     public function getAll(){
-        $data = Cache::remember('allMovieAdmin', 30, function(){
-            return $this->movie->load('movie_detail')->get()->map(function($movie){
+        $cache = Cache::get('allMovieShow');
+
+        if(isset($cache)){
+            return $cache;
+        }
+        Cache::remember('allMovieShow', 60*60*24, function(){
+            return $this->movie->withWhereHas('movie_detail', fn($query) => 
+                $query->where('status', 1)
+            )->get()->map(function($movie){
                 return new MovieResource($movie);
-           });
+            });
         });
-        return $data;
+        return $cache;
+
+
     }
     public function getPage($page){
         $limitPerPage = 6;
@@ -128,6 +152,82 @@ class MovieController extends Controller
         });
 
         return $data;
+    }
+
+    public function getMovieContent($type){
+        $cache = Cache::get('movie_content_'.$type);
+
+        if(isset($cache)){
+            return $cache;
+        }
+
+        Cache::remember('movie_content_'.$type, 60*60*24, function() use ($type){
+            return $this->movie->withWhereHas('movie_detail', fn($query) =>
+                $query->where('status', $type)
+            )->limit(8)->get()->map(function($movie){
+                return new MovieResource($movie);
+            });
+        });
+        return $cache;
+
+    }
+
+
+    public function updateMovie(Request $request){
+        try{
+            DB::beginTransaction();
+            $minutes = $request->time;
+            $formatted_time = floor($minutes / 60) . ':'. ($minutes -   floor($minutes / 60) * 60).':00';
+
+            $checkMovie = $this->movie->find($request->movie_id);
+            if($checkMovie){
+                $checkDetail = $this->movie_detail->where('movie_id', $request->movie_id)->first();
+                $uploadPoster = $this->imgUpload($request, 'post_path', 'movie');
+                $uploadBackdrop = $this->imgUpload($request, 'backdrop_path', 'movie');
+
+                $dataMovie = [
+                    'title' => $request->title,
+                    'release' => $request->release,
+                    'time' => $formatted_time,
+                ];
+                $dataDetail = [
+                    'title' => $request->title,
+                    'overview' => $request->overview,
+                    'status' => $request->status,
+                ];
+                if(!empty($uploadPoster)){
+                    File::delete(public_path($checkMovie->post_path));
+                    $dataMovie['post_path'] = $uploadPoster;
+                }
+                if(!empty($uploadBackdrop)){
+                    File::delete(public_path($checkMovie->backdrop_path));
+                    $dataMovie['backdrop_path'] = $uploadBackdrop;
+                }
+                if($request->casts){
+                    foreach($request->casts as $value){
+                        $cast = $this->cast->find($value);
+                        $castID[] = $cast->id;
+                    }
+                    $checkMovie->movie_cast()->sync($castID);
+                }
+                if($request->genres){
+                    foreach( $request->genres as $value){
+                        $genre = $this->genre->find($value);
+                        $genreID[] = $genre->id;
+                    }
+                    $checkDetail->movie_genre()->sync($genreID);
+                }
+                $checkMovie->update($dataMovie);
+                $checkDetail->update($dataDetail);
+                DB::commit();
+                return  response()->json([
+                    'status' => 200,
+                    'message' => 'Update successfully'
+                ]);
+            }
+        }catch(Exception $e){
+            DB::rollBack();
+        }
     }
 
 }

@@ -36,6 +36,8 @@ Route::get('/Movie/page/{page}', [MovieController::class, 'getPage'])->name('get
 Route::get('/Movie/detail/{id}', [MovieController::class, 'movieDetail'])->name('get-movie_id-detail');
 Route::get('/Movie/getAll', [MovieController::class, 'getAll'])->name('getall-movie');
 Route::get('/Movie/getType/{type}', [MovieController::class, 'getTypeMovie'])->name('get-type-movie');
+Route::get('/Movie/getContent/{type}', [MovieController::class, 'getMovieContent'])->name('get-type-movie');
+
 
 Route::get('/Cast/detail/{id}',[CastController::class, 'detail'])->name('get-cast_id-detail');
 Route::get('/Cast/getAll', [CastController::class, 'getAll'])->name('getall-cast');
@@ -57,34 +59,37 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     //Controller Movie ===========================================================
     Route::post('/Movie/createMovie', [MovieController::class, 'createMovie'])->name('create-movie');
     Route::get('/Movie/getMovie', [MovieController::class, 'getAdminMovie'])->name('getAdmin-movie');
+    Route::post('/Movie/updateMovie', [MovieController::class, 'updateMovie'])->name('update-movie');
 
     //Controller Cast ============================================================
     Route::post('/Cast/createCast', [CastController::class, 'createCast'])->name('create-cast');
+    Route::post('/Cast/updateCast', [CastController::class, 'updateCast'])->name('update-cast');
     
+
     //Controller Trailer =========================================================
     Route::post('Trailer/createTrailer', [Trailers::class, 'createTrailer'])->name('create-trailer');
-
+    Route::post('Trailer/updateTrailer', [Trailers::class, 'updateTrailer'])->name('update-trailer');
     //Controller Genre ============================================================
     Route::post('Genre/createGenre', [GenreController::class, 'createGenre'])->name('create-genre');
-
+    Route::post('Genre/updateGenre', [GenreController::class, 'updateGenre'])->name('update-genre');
     //Controller Room =============================================================
     Route::post('Room/createRoom', [RoomController::class, 'createRoom'])->name('create-room');
-
+    Route::post('Room/updateRoom', [RoomController::class, 'updateRoom'])->name('update-room');
 
     //Controller Schedule ==========================================================
     Route::post('Schedule/createSchedule', [ScheduleController::class, 'createSchedule'])->name('create-schedule');
-    Route::get('Schedule/getAllSchedule', [ScheduleController::class, 'getAllSchedule'])->name('getAll-schedule');
+    Route::get('Schedule/getSchedule', [ScheduleController::class, 'getAllSchedule'])->name('getAll-schedule');
     Route::get('Schedule/getSchedule/{room}', [ScheduleController::class, 'getSchedule'])->name('getSchedule');
-
+    Route::post('Schedule/updateSchedule', [ScheduleController::class, 'updateSchedule'])->name('updateSchedule');
 });
 
 
 
 
-//check user logout
+
 Route::middleware(['auth:sanctum'])->group(function () {
-    
     Route::post('logout', [AuthController::class, 'logout']);
+    
 });
 
 

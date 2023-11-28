@@ -18,6 +18,9 @@ class RoomResource extends JsonResource
             'id' => $this->id,
             'name_room' => $this->name,
             'number_seat' => $this->seat->count(),
+            'status' => $this->status,
+            'schedule' => $this->schedule,
+            'seat' => $this->seat
         ];
     }
 }

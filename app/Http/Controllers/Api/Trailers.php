@@ -63,4 +63,24 @@ class Trailers extends Controller
 
         return $data;
     }
+
+
+    public function updateTrailer(Request $request){
+        $checkTrailer = $this->trailer->find($request->id);
+        if($checkTrailer){
+            $data = [
+                'key' => $request->key,
+            ];
+            $checkTrailer->update($data);
+            return response()->json([
+                'status' => 200,
+                'message' => 'Updated successfully',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 401,
+            'message' => 'Id trailer not found',
+        ]);
+    }
 }

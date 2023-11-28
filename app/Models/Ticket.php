@@ -10,9 +10,9 @@ class Ticket extends Model
 {
     use HasFactory;
 
-    protected $table = 'tickets';
+    protected $table = 'ticket';
 
-    protected $fillable = ['seat_id', 'schedule_id', 'book_id', 'status'];
+    protected $fillable = ['seat_id', 'schedule_id', 'booking_id', 'status'];
 
     public function seat(): BelongsTo{
         return $this->belongsTo(Seat::class);

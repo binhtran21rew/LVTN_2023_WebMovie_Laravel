@@ -7,7 +7,9 @@ use App\Http\Requests\RoomRequest;
 use App\Http\Resources\RoomResource;
 use App\Http\Resources\SeatResource;
 use App\Models\Room;
+use App\Models\Schedule;
 use App\Models\Seat;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
@@ -20,9 +22,6 @@ class RoomController extends Controller
     }
 
     public function createRoom(RoomRequest $request){
-
-
-
         $checkRoom = $this->room->where('name', $request->name)->first();
         if($checkRoom){
             return response()->json([
@@ -62,6 +61,29 @@ class RoomController extends Controller
         $rooms = $this->room->where('status', '0')->get();
 
         return $rooms;
+    }
+
+    public function updateRoom(Request $request){
+        $checkRoom = $this->room->find($request->id);
+        if($checkRoom){
+            
+            $dataRoom = [
+                'name' => $request->name,
+                'status' => $request->status
+            ];
+         
+            $checkRoom->update($dataRoom);
+            
+            return response()->json([
+                'status' => 200,
+                'message' => 'Updated successfully'
+            ]);
+        }
+
+        return response()->json([
+            'status' => 401,
+            'message' => 'Room not found'
+        ]);
     }
 }
 

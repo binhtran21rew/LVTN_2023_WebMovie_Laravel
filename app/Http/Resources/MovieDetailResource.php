@@ -18,7 +18,7 @@ class MovieDetailResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'backdrop_path' => $this->movie->backdrop_path,
-            'poster_path' => $this->movie->poster_path,
+            'poster_path' => $this->movie->post_path,
             'overview' => $this->overview,
             'time' => $this->movie->time,
             'release' => $this->movie->release,
@@ -26,6 +26,7 @@ class MovieDetailResource extends JsonResource
             'vote_average' => $this->vote_average,
             'status' => $this->status,
             'genres' => $this->movie_genre,
+            'casts' => $this->movie->movie_cast ?? null,
         ];
     }
 }

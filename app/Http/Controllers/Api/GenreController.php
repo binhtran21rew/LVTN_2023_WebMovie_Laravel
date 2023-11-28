@@ -38,4 +38,23 @@ class GenreController extends Controller
         return $this->genre->all();
     }
 
+    public function updateGenre(Request $request){
+        $checkGenre = $this->genre->find($request->id);
+        if($checkGenre){
+            $data = [
+                'name' => $request->name,
+            ];
+            $checkGenre->update($data);
+            return response()->json([
+                'status' => 200,
+                'message' => 'Update Success'
+            ]);
+        }
+
+        return response()->json([
+            'status' => 401,
+            'message' => 'Id genre not found'
+        ]);
+    }
+
 }

@@ -2,9 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\Builder;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,12 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // DB::listen(function($query) {
-        //     Log::info(
-        //         $query->sql,
-        //         $query->bindings,
-        //         $query->time
-        //     );
-        // });
+        // Load (eager Load) and whereHas
+        Builder::macro('withWhereHas', fn($relation, $constraint) =>
+            $this->whereHas($relation, $constraint)->with([$relation => $constraint]));
     }
 }

@@ -27,8 +27,8 @@ class MovieRequest extends FormRequest
     {
         return [
            'title' => 'required',
-           'post_path' => 'required',
-           'backdrop_path' => 'required',
+        //    'post_path' => 'required',
+        //    'backdrop_path' => 'required',
            'release' => 'required',
            'overview' => 'string',
            'vote_count' => 'integer',

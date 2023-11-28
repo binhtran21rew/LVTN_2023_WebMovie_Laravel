@@ -15,13 +15,13 @@ return new class extends Migration
             $table->integer('id')->unique()->autoIncrement();
             $table->integer('seat_id');
             $table->integer('schedule_id');
-            $table->integer('booking_id');
-            $table->string('status');
+            $table->bigInteger('booking_id');
+            $table->integer('status');
             $table->timestamps();
 
             $table->foreign('seat_id')->references('id')->on('seats');
             $table->foreign('schedule_id')->references('id')->on('schedules');
-            $table->foreign('booking_id')->references('id')->on('bookings');
+            $table->foreign('booking_id')->references('user_id')->on('bookings');
         });
     }
 

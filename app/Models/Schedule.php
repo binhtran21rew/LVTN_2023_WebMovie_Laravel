@@ -13,7 +13,7 @@ class Schedule extends Model
 
     protected $table = 'schedules';
 
-    protected $fillable= ['room_id', 'movie_id', 'date', 'price', 'time_start', 'time_end'];
+    protected $fillable= ['room_id', 'movie_id', 'date', 'price', 'time_start', 'time_end', 'status'];
 
     public function ticket(): HasMany{
         return $this->hasMany(Ticket::class);

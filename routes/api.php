@@ -51,6 +51,9 @@ Route::get('/Room/getAll', [RoomController::class, 'getAll'])->name('getall-room
 Route::get('/Room/getAvailable', [RoomController::class, 'getAvailable'])->name('getall-room');
 
 
+Route::get('Schedule/getBookingSchedule/{movie}', [ScheduleController::class, 'getBookingSchedule'])->name('getSchedule');
+Route::get('Schedule/getTicket/{schedule}', [ScheduleController::class, 'getTicket'])->name('getTicket');
+
 Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('/checkLogin', function(){
         return response()->json(['message' => 'You have been logged in', 'status' => 200], 200);

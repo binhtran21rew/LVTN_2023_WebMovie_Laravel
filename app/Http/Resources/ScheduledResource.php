@@ -22,6 +22,7 @@ class ScheduledResource extends JsonResource
             'price' => $this->price,
             'time_start' => $this->time_start,
             'time_end' => $this->time_end,
+            'ticket' => $this->ticket,
         ];
     }
 }

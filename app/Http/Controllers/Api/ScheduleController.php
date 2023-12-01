@@ -13,6 +13,7 @@ use App\Models\Seat;
 use App\Models\Ticket;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ScheduleController extends Controller
 {
@@ -125,10 +126,13 @@ class ScheduleController extends Controller
 
     public function getSchedule($room){
         $schedules = $this->schedule->with('movie')->where('room_id', $room)->get();
-        foreach($schedules as $schedule){
-            $data[] = new CalendarFormat($schedule);
+        if(sizeof($schedules) > 0){
+            foreach($schedules as $schedule){
+                $data[] = new CalendarFormat($schedule);
+            }
+            return $data;
         }
-        return $data;
+        return $schedules;
     }
 
 
@@ -210,6 +214,32 @@ class ScheduleController extends Controller
             'status' => 401,
             'message' => 'Schedule not found'
         ]);
+    }
+
+
+
+    public function getBookingSchedule($movie){
+        // $cache = Cache::get('booking_schedule_day_'.$type);
+        $today = Carbon::now()->toDateString();
+
+        if($movie === "DEFAULT"){
+            return [];
+        }
+
+        $checkSchedule = $this->schedule->load('movie')->where('movie_id', $movie)->where('date', '>=', $today)->where('status', 0)->get();
+        return $checkSchedule;
+    }
+
+
+    public function getTicket($schedule){
+        $checkSchedule = $this->schedule->load(['movie', 'ticket.seat'])->find($schedule);
+
+
+        // foreach($checkSchedule->ticket as $data){
+        //     return $data['seat_id'];
+        // }
+        // return $checkSchedule;
+        return new ScheduledResource($checkSchedule);
     }
 }
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -13,10 +14,10 @@ class Booking extends Model
     use HasFactory;
 
     protected $table = 'bookings';
-    protected $fillable = ['user_id', 'payment_id', 'count', 'date', 'status'];
+    protected $fillable = ['user_id', 'count', 'total_price', 'date', 'status'];
 
-    public function payment(): BelongsTo{
-        return $this->belongsTo(Payment::class);
+    public function payment(): HasOne{
+        return $this->HasOne(Payment::class);
     }
 
     public function user(): BelongsTo{
@@ -25,5 +26,9 @@ class Booking extends Model
 
     public function ticket(): HasMany{
         return $this->hasMany(Ticket::class);
+    }
+
+    public function food(): BelongsToMany{
+        return $this->belongsToMany(Food::class, 'booking_food', 'booking_id', 'food_id');
     }
 }

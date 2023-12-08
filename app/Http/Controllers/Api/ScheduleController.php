@@ -219,7 +219,10 @@ class ScheduleController extends Controller
 
 
     public function getBookingSchedule($movie){
-        // $cache = Cache::get('booking_schedule_day_'.$type);
+        $cache = Cache::get('booking_schedule_'.$movie);
+        if(isset($cache)){
+            return $cache;
+        }
         $today = Carbon::now()->toDateString();
 
         if($movie === "DEFAULT"){
@@ -227,18 +230,20 @@ class ScheduleController extends Controller
         }
 
         $checkSchedule = $this->schedule->load('movie')->where('movie_id', $movie)->where('date', '>=', $today)->where('status', 0)->get();
-        return $checkSchedule;
+
+        if($checkSchedule){
+            Cache::remember('booking_schedule_'.$movie, 60*60*24,function() use($checkSchedule){
+                return  $checkSchedule;
+            });
+            return $cache;
+        }
+        
     }
 
 
     public function getTicket($schedule){
-        $checkSchedule = $this->schedule->load(['movie', 'ticket.seat'])->find($schedule);
+        $checkSchedule = $this->schedule->with(['movie', 'ticket.seat'])->find($schedule);
 
-
-        // foreach($checkSchedule->ticket as $data){
-        //     return $data['seat_id'];
-        // }
-        // return $checkSchedule;
         return new ScheduledResource($checkSchedule);
     }
 }

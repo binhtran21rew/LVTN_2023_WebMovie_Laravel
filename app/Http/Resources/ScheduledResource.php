@@ -18,6 +18,7 @@ class ScheduledResource extends JsonResource
             'id' => $this->id,
             'room' => $this->room->name,
             'movie' => $this->movie->title,
+            'post_path' => $this->movie->post_path,
             'date' => $this->date,
             'price' => $this->price,
             'time_start' => $this->time_start,

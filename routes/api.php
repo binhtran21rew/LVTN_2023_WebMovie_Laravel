@@ -1,14 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\MovieController;
 use App\Http\Controllers\Api\CastController;
 use App\Http\Controllers\Api\Trailers;
 use App\Http\Controllers\Api\GenreController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\ScheduleController;
-
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,8 +35,8 @@ Route::prefix('web')->group(function () {
 Route::get('/Movie/page/{page}', [MovieController::class, 'getPage'])->name('getall-movie');
 Route::get('/Movie/detail/{id}', [MovieController::class, 'movieDetail'])->name('get-movie_id-detail');
 Route::get('/Movie/getAll', [MovieController::class, 'getAll'])->name('getall-movie');
-Route::get('/Movie/getType/{type}', [MovieController::class, 'getTypeMovie'])->name('get-type-movie');
 Route::get('/Movie/getContent/{type}', [MovieController::class, 'getMovieContent'])->name('get-type-movie');
+Route::get('/Movie/getMovie/{id}', [MovieController::class, 'getMovieId'])->name('get-movieId');
 
 
 Route::get('/Cast/detail/{id}',[CastController::class, 'detail'])->name('get-cast_id-detail');
@@ -53,6 +53,9 @@ Route::get('/Room/getAvailable', [RoomController::class, 'getAvailable'])->name(
 
 Route::get('Schedule/getBookingSchedule/{movie}', [ScheduleController::class, 'getBookingSchedule'])->name('getSchedule');
 Route::get('Schedule/getTicket/{schedule}', [ScheduleController::class, 'getTicket'])->name('getTicket');
+
+Route::post('Booking/BookingTicket', [BookingController::class, 'bookingTicket'])->name('bookingTicket');
+
 
 Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('/checkLogin', function(){
@@ -84,6 +87,11 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('Schedule/getSchedule', [ScheduleController::class, 'getAllSchedule'])->name('getAll-schedule');
     Route::get('Schedule/getSchedule/{room}', [ScheduleController::class, 'getSchedule'])->name('getSchedule');
     Route::post('Schedule/updateSchedule', [ScheduleController::class, 'updateSchedule'])->name('updateSchedule');
+
+    //Controller Food ================================================================
+    
+
+
 });
 
 
@@ -92,6 +100,7 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('/Payment/momo', [PaymentController::class, 'momoPayment'])->name('payment-momo');
     
 });
 
@@ -100,6 +109,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Authorization user with role or permissions
 Route::middleware(['auth:sanctum','role_or_permission:users.list'])->group(function() {
     Route::get('user', [AuthController::class, 'user']);
+
 });
 
 

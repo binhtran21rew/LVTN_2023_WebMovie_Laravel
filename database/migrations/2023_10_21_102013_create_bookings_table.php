@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
+        
         Schema::create('bookings', function (Blueprint $table) {
             $table->integer('id')->unique()->autoIncrement();
             $table->bigInteger('user_id')->unsigned();
-            $table->integer('payment_id');
             $table->integer('count');
             $table->dateTime('date');
+            $table->float('total_price');
             $table->string('status');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('payment_id')->references('id')->on('payments');
 
         });
     }

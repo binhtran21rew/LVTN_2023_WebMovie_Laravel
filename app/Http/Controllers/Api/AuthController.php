@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Helper\Helper;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\AccountResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasPermissions;
@@ -16,6 +18,11 @@ use Spatie\Permission\Traits\HasRoles;
 
 class AuthController extends Controller
 {
+
+    private $user;
+    public function __construct (User $user){
+        $this->user = $user;
+    }
     public function loginUser(LoginRequest $request){
         if(!Auth::attempt($request->only('email', 'password'))){
             Helper::sendError('Email or Password is wrong', [] ,401);
@@ -52,7 +59,8 @@ class AuthController extends Controller
     }
 
     public function user(){
-        return auth()->user();
+        $checkUser = $this->user->with(['booking.ticket.schedule.movie', 'booking.payment'])->find(auth()->user()->id);
+        return new AccountResource($checkUser);
     }
 
     // public function grant(){

@@ -82,6 +82,24 @@ class MovieController extends Controller
     }
 
 
+    public function getMovieId($id){
+        $cache = Cache::get('movie_'.$id);
+        if(isset($cache)){
+            return $cache;
+        }
+        $movie = $this->movie->find($id);
+
+        if($movie){
+            Cache::remember('movie_'.$id, 60*60*24,function() use($movie){
+                return  $movie;
+            });
+            return $cache;
+        }
+        return  response()->json([
+            'status' => 404,
+            'message' => 'Not found movie'
+        ]);
+    }
     public function movieDetail($id){
         $cache = Cache::get('movie_detail_'.$id);
         if(isset($cache)){
@@ -105,7 +123,7 @@ class MovieController extends Controller
         if(isset($cache)){
             return $cache;
         }
-
+        
         Cache::remember('allMovieAdmin', 60*60*24, function(){
             return $this->movie_detail->load(['movie.movie_cast', 'movie_genre'])->get()->map(function($d){
                 return new MovieDetailResource($d);
@@ -144,15 +162,7 @@ class MovieController extends Controller
         return $data;
     }
 
-    public function getTypeMovie($type){
-        $movies = $this->movie_detail->where('status', $type)->get();
 
-        $data = $movies->map(function($movie){
-            return new MovieDetailResource($movie);
-        });
-
-        return $data;
-    }
 
     public function getMovieContent($type){
         $cache = Cache::get('movie_content_'.$type);

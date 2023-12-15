@@ -9,8 +9,11 @@ use App\Http\Resources\SeatResource;
 use App\Models\Room;
 use App\Models\Schedule;
 use App\Models\Seat;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RoomController extends Controller
 {
@@ -84,6 +87,77 @@ class RoomController extends Controller
             'status' => 401,
             'message' => 'Room not found'
         ]);
+    }
+
+    public function deleteRoom(Request $request){
+        $today = Carbon::now()->toDateString();
+
+        $isSoftDelete = $this->room->onlyTrashed()->find($request->id);
+        $isSetSchedule = $this->room->with(['schedule' => function(Builder $query ) use($today){
+            $query->where('date', '>=', $today);
+        }])->find($request->id);
+        if($isSoftDelete){
+            if($request->type === 'delete'){
+                try{
+                    DB::beginTransaction();
+
+                    $isSoftDelete->forceDelete();
+                    DB::commit();
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Clear room successfully',
+                    ]);
+                }catch(Exception $e){
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 401,
+                        'message' => 'There was old schedule in room. Please delete it first to clear this room !',
+                    ]);
+                }
+
+            }else{
+                $isSoftDelete->restore();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Restore data successfully',
+                ]);
+            }
+
+        }else{
+            if($isSetSchedule->schedule->count() === 0){
+                $checkid= $this->room->find($request->id);
+                if(!$checkid){
+                    return response()->json([
+                        'status' => 401,
+                        'message' => 'Id room not found',
+                    ]);
+                }
+    
+                $checkid->delete();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Id room was deleted successfully',
+                ]);
+            }
+            return response()->json([
+                'status' => 401,
+                'message' => 'The room is set schedule. Can not delete !',
+            ]);
+        }
+    }
+
+    public function getTrashed(){
+        $rooms = $this->room->onlyTrashed()->get();
+        if($rooms->count() > 0){
+            foreach( $rooms as  $room){
+                $data[] = new RoomResource($room);
+            }
+
+            return $data ;
+        }
+
+        return $rooms;
+
     }
 }
 

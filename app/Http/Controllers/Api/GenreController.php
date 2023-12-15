@@ -57,4 +57,53 @@ class GenreController extends Controller
         ]);
     }
 
+
+    public function deleteGenre(Request $request){
+        $isSoftDelete = $this->genre->onlyTrashed()->find($request->id);
+        $checkUsages = $this->genre->with('movie_detail')->find($request->id);
+
+        if($isSoftDelete){
+            if($request->type === 'delete'){
+                $isSoftDelete->forceDelete();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Clear genre successfully',
+                ]);
+            }else{
+                $isSoftDelete->restore();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Restore data successfully',
+                ]);
+            }
+
+        }else{
+            if($checkUsages->movie_detail->count() === 0){
+                $checkid= $this->genre->find($request->id);
+                if(!$checkid){
+                    return response()->json([
+                        'status' => 401,
+                        'message' => 'Id genre not found',
+                    ]);
+                }
+    
+                $checkid->delete();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Id genre was deleted successfully',
+                ]);
+            }
+            return response()->json([
+                'status' => 401,
+                'message' => 'The genre is in movie. Can not delete !',
+            ]);
+        }
+    }
+
+    public function getTrashed(){
+        $genres = $this->genre->onlyTrashed()->get();
+    
+        return $genres;
+    }
+
 }

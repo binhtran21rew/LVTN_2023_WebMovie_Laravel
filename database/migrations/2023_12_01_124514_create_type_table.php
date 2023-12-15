@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('type', function (Blueprint $table) {
+        Schema::create('comboFood', function (Blueprint $table) {
             $table->integer('id')->unique()->autoIncrement();
-            $table->string('type');
             $table->string('name');
-            $table->integer('price');
+            $table->float('price');
+            $table->string('detail');
+            $table->integer('count')->default(0);
+            $table->string('image_path');
             $table->timestamps();
         });
+
+
     }
 
     /**
@@ -25,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('type');
+        Schema::dropIfExists('comboFood');
     }
 };

@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('type_food', function (Blueprint $table) {
             $table->id();
             $table->integer('food_id');
-            $table->integer('type_id');
+            $table->integer('combo_id');
             $table->timestamps();
 
-            $table->foreign('type_id')->references('id')->on('type');
+            $table->foreign('combo_id')->references('id')->on('comboFood');
             $table->foreign('food_id')->references('id')->on('food');
         });
     }

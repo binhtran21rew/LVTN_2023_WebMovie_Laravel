@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('booking_food', function (Blueprint $table) {
             $table->id();
             $table->integer('booking_id');
-            $table->integer('food_id');
+            $table->integer('combo_id');
             $table->timestamps();
 
             $table->foreign('booking_id')->references('id')->on('bookings');
-            $table->foreign('food_id')->references('id')->on('food');
+            $table->foreign('combo_id')->references('id')->on('comboFood');
         });
     }
 

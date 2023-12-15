@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('food', function (Blueprint $table) {
-            $table->integer('id')->unique()->autoIncrement();
-            $table->string('name');
-            $table->timestamps();
+        Schema::table('trailers', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('food');
+        Schema::table('trailers', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

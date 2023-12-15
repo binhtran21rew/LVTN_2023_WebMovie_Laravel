@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Ticket;
@@ -79,5 +80,18 @@ class BookingController extends Controller
         }
        
 
+    }
+
+
+    public function getAllBookingAdmin(){
+        $bookings = $this->booking->with(['user', 'ticket.seat.room','ticket.schedule.movie' , 'payment', 'combofood'])->get();
+
+        if($bookings !== null){
+            foreach($bookings as $booking){
+                $data[] = new BookingResource($booking);
+            }
+            return $data;
+        }
+        return $bookings;
     }
 }

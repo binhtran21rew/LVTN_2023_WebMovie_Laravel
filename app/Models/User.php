@@ -13,6 +13,10 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    
+    public function guardName(){
+        return "web";
+    }
 
     /**
      * The attributes that are mass assignable.

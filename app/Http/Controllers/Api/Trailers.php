@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TrailerRequest;
 use App\Http\Resources\TrailerResource;
 use App\Models\Movie;
+use App\Models\Movie_detail;
 use App\Models\Trailer;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,14 +15,15 @@ class Trailers extends Controller
 {
     private $movie;
     private $trailer;
-    public function __construct(Movie $movie, Trailer $trailer){
+    private $movie_detail;
+    public function __construct(Movie $movie, Trailer $trailer, Movie_detail $movie_detail){
         $this->movie = $movie;
         $this->trailer = $trailer;
-
+        $this->movie_detail = $movie_detail;
     }
 
     public function createTrailer(TrailerRequest $request){
-        $checkMovie = $this->movie->find($request->movie_id);
+        $checkMovie = $this->movie_detail->find($request->movie_id);
         $checkName = $this->trailer->where('key', $request->key)->first();
         if($checkMovie){
             if($checkName){
@@ -32,7 +34,7 @@ class Trailers extends Controller
             }
             $dataTrailer = [
                 "key" => $request->key,
-                "movie_id" => $request->movie_id,
+                "movie_id" => $checkMovie->movie_id,
             ];
             $this->trailer->create($dataTrailer);
 
@@ -82,5 +84,51 @@ class Trailers extends Controller
             'status' => 401,
             'message' => 'Id trailer not found',
         ]);
+    }
+
+    public function deleteTrailer(Request $request){
+        $isSoftDelete = $this->trailer->onlyTrashed()->find($request->id);
+        if($isSoftDelete){
+            if($request->type === 'delete'){
+                $isSoftDelete->forceDelete();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Clear trailer successfully',
+                ]);
+            }else{
+                $isSoftDelete->restore();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Restore data successfully',
+                ]);
+            }
+
+        }else{
+            $checkid= $this->trailer->find($request->id);
+            if(!$checkid){
+                return response()->json([
+                    'status' => 401,
+                    'message' => 'Id trailer not found',
+                ]);
+            }
+
+            $checkid->delete();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Id trailer was deleted successfully',
+            ]);
+        }
+    }
+
+    public function getTrashed(){
+        $trailers = $this->trailer->onlyTrashed()->get();
+        $data = [];
+        if($trailers){
+            foreach($trailers as $trailer){
+                $data[] = new TrailerResource($trailer);
+            }
+        }
+
+        return $data;
     }
 }

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Movie extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'movies';
 
@@ -27,9 +28,13 @@ class Movie extends Model
     public function movie_cast(): BelongsToMany{
         return $this
             ->belongsToMany(Cast::class, 'movie_casts', 'movie_id', 'cast_id');
-            
         }
-
+    public function movie_cast_delete(): BelongsToMany{
+        return $this
+        ->belongsToMany(Cast::class, 'movie_casts')
+        ->whereNull('movie_casts.deleted_at')
+        ->withTimestamps();
+    }
     public function schedule(): HasMany{
         return $this->hasMany(Schedule::class);
     }

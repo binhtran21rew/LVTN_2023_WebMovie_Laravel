@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamps();
 
             
-            $table->primary('id');
+            // $table->primary('id');
             $table->foreign('booking_id')->references('id')->on('bookings');
         });
     }

@@ -28,7 +28,7 @@ class Booking extends Model
         return $this->hasMany(Ticket::class);
     }
 
-    public function food(): BelongsToMany{
-        return $this->belongsToMany(Food::class, 'booking_food', 'booking_id', 'food_id');
+    public function combofood(): BelongsToMany{
+        return $this->belongsToMany(ComboFood::class, 'booking_combo', 'booking_id', 'combo_id');
     }
 }

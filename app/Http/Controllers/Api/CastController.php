@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\StoreImg;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\File;
 
 class CastController extends Controller
@@ -79,5 +80,55 @@ class CastController extends Controller
             'message' => 'Id cast not found',
 
         ]);
+    }
+
+
+    public function deleteCast(Request $request){
+        $isSoftDelete = $this->cast->onlyTrashed()->find($request->id);
+        $checkUsages = $this->cast->with('movie')->find($request->id);
+        if($isSoftDelete){
+            if($request->type === 'delete'){
+                File::delete(public_path($isSoftDelete->profile_path));
+                $isSoftDelete->forceDelete();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Clear cast successfully',
+                ]);
+            }else{
+                $isSoftDelete->restore();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Restore data successfully',
+                ]);
+            }
+
+        }else{
+            if($checkUsages->movie->count() === 0){
+                $checkid= $this->cast->find($request->id);
+                if(!$checkid){
+                    return response()->json([
+                        'status' => 401,
+                        'message' => 'Id cast not found',
+                    ]);
+                }
+    
+                $checkid->delete();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Id cast was deleted successfully',
+                ]);
+            }
+            return response()->json([
+                'status' => 401,
+                'message' => 'The cast is in movie. Can not delete !',
+            ]);
+        }
+        
+    }
+
+    public function getTrashed(){
+        $casts = $this->cast->onlyTrashed()->get();
+    
+        return $casts;
     }
 }

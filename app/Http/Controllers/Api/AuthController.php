@@ -12,6 +12,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasPermissions;
@@ -95,12 +96,21 @@ class AuthController extends Controller
                 'phone' => $request->phone
             ]);
     
-            $user_role = Role::where(['name' => 'admin'])->first();
-            $user_role2 = Role::where(['name' => 'user'])->first();
-            if($user_role){
-                $user->assignRole($user_role);
-                $user->assignRole($user_role2);
+            // $user_role = Role::where(['name' => 'admin'])->first();
+
+            if(isset($request->role)){
+                foreach($request->role as $role){
+                    $ids = Role::find($role);
+                    $roles[] = $ids->id;
+                }
+                $user->syncRoles($roles);
+            }else{
+                $user_role = Role::where(['name' => 'admin'])->first();
+                if($user_role){
+                    $user->syncRoles($user_role);
+                }
             }
+
             DB::commit();
             return response()->json([
                 'status' => 200,
@@ -108,16 +118,77 @@ class AuthController extends Controller
             ]);
         }catch(Exception $e){
             DB::rollBack();
-            return $e->getMessage();
-            // return response()->json([
-            //     'status' => 401,
-            //     'message' => 'register is wrong !',
-            // ]);
+            return response()->json([
+                'status' => 401,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
-    public function role(){
-        return 'role';
+    public function updateAccount(Request $request){
+        $checkAccount = User::find($request->id);
+        if($checkAccount->hasAnyRole('root_admin')){
+            return response()->json([
+                'status' => 401,
+                'message' => 'You can not update root admin account',
+            ]);
+        }
+
+        try{
+            DB::beginTransaction();
+            if(isset($request->role)){
+                foreach($request->role as $role){
+                    $ids = Role::find($role);
+                    $roles[] = $ids->id;
+                }
+                $checkAccount->syncRoles($roles);
+            }else{
+                $user_role = Role::where(['name' => 'admin'])->first();
+                if($user_role){
+                    $checkAccount->syncRoles($user_role);
+                }
+            }
+            DB::commit();
+            return response()->json([
+                'status' => 200,
+                'message' => 'update account role successfully',
+            ]);
+        }catch(Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 200,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        
+
+    }
+
+    public function deleteAccount(Request $request){
+        $checkAccount = User::find($request->id);
+        if($checkAccount->hasAnyRole('root_admin')){
+            return response()->json([
+                'status' => 401,
+                'message' => 'You can not update root admin account',
+            ]);
+        }
+        try{
+            DB::beginTransaction();
+            $checkAccount->syncRoles([]);
+            $checkAccount->delete();
+            DB::commit();
+            return response()->json([
+                'status' => 200,
+                'message' => 'delete account successfully',
+            ]);
+        }catch(Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 200,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
     // public function grant(){
     //     $super = Role::create(['name' => 'super admin']);

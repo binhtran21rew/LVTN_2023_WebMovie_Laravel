@@ -30,99 +30,92 @@ class ScheduleController extends Controller
         $this->seat = $seat;
     }
     public function createSchedule(ScheduleRequest $request){
-
+        return 1;
         
-        $checkRoom = $this->room->find($request->room_id);
-        $checkMovie = $this->movie->find( $request->movie_id );
-        $date = $request->date;
+        // $checkRoom = $this->room->find($request->room_id);
+        // $checkMovie = $this->movie->find( $request->movie_id );
+        // $date = $request->date;
 
-        $start = strtotime($request->time_start);
-        $end = strtotime($checkMovie->time);
-        $plus = strtotime('00:15:00');
+        // $start = strtotime($request->time_start);
+        // $end = strtotime($checkMovie->time);
+        // $plus = strtotime('00:15:00');
         
-        $setTimeEnd = gmdate("H:i:s",$start + $end + $plus);
-        $setTimeStart= gmdate("H:i:s",$start + $plus);
+        // $setTimeEnd = gmdate("H:i:s",$start + $end + $plus);
+        // $setTimeStart= gmdate("H:i:s",$start + $plus);
 
-        $checkSchedule = $this->schedule
-            ->where('date', $date)
-            ->where('room_id', $request->room_id)
-            ->where('time_start', '<=', $setTimeStart)
-            ->where('time_end', '>=', $setTimeStart)
+        // $checkSchedule = $this->schedule
+        //     ->where('date', $date)
+        //     ->where('room_id', $request->room_id)
+        //     ->where('time_start', '<=', $setTimeStart)
+        //     ->where('time_end', '>=', $setTimeStart)
 
-            ->orwhere('date', $date)
-            ->where('room_id', $request->room_id)
-            ->where('time_start', '<=', $setTimeEnd)
-            ->where('time_end', '>=', $setTimeEnd)
+        //     ->orwhere('date', $date)
+        //     ->where('room_id', $request->room_id)
+        //     ->where('time_start', '<=', $setTimeEnd)
+        //     ->where('time_end', '>=', $setTimeEnd)
 
-            ->orwhere('date', $date)
-            ->where('room_id', $request->room_id)
-            ->where('time_start', '<=', $setTimeEnd)
-            ->where('time_end', '>=', $setTimeStart)
-            ->get()
-            ->count();
-        $getCheckSchedule = $this->schedule
-            ->where('date', $date)
-            ->where('room_id', $request->room_id)
-            ->where('time_start', '<=', $setTimeStart)
-            ->where('time_end', '>=', $setTimeStart)
+        //     ->orwhere('date', $date)
+        //     ->where('room_id', $request->room_id)
+        //     ->where('time_start', '<=', $setTimeEnd)
+        //     ->where('time_end', '>=', $setTimeStart)
+        //     ->get()
+        //     ->count();
+        // $getCheckSchedule = $this->schedule
+        //     ->where('date', $date)
+        //     ->where('room_id', $request->room_id)
+        //     ->where('time_start', '<=', $setTimeStart)
+        //     ->where('time_end', '>=', $setTimeStart)
 
-            ->orwhere('date', $date)
-            ->where('room_id', $request->room_id)
-            ->where('time_start', '<=', $setTimeEnd)
-            ->where('time_end', '>=', $setTimeEnd)
+        //     ->orwhere('date', $date)
+        //     ->where('room_id', $request->room_id)
+        //     ->where('time_start', '<=', $setTimeEnd)
+        //     ->where('time_end', '>=', $setTimeEnd)
 
-            ->orwhere('date', $date)
-            ->where('room_id', $request->room_id)
-            ->where('time_start', '<=', $setTimeEnd)
-            ->where('time_end', '>=', $setTimeStart)
-            ->get();
+        //     ->orwhere('date', $date)
+        //     ->where('room_id', $request->room_id)
+        //     ->where('time_start', '<=', $setTimeEnd)
+        //     ->where('time_end', '>=', $setTimeStart)
+        //     ->get();
 
-        if($checkRoom && $checkMovie){
-            if($checkSchedule > 0){
-                return response()->json([
-                    'status' => 401,
-                    'message' => 'The schedule has been set',
-                    'data' => new ScheduledResource($getCheckSchedule[0])
-                ]);
-            }
+        // if($checkRoom && $checkMovie){
+        //     if($checkSchedule > 0){
+        //         return response()->json([
+        //             'status' => 401,
+        //             'message' => 'The schedule has been set',
+        //             'data' => new ScheduledResource($getCheckSchedule[0])
+        //         ]);
+        //     }
 
-            $scheduledata = $this->schedule::create([
-                'room_id' => $request->room_id,
-                'movie_id' => $request->movie_id,
-                'date' => $request->date,
-                'price' => $request->price,
-                'time_start' => $setTimeStart,
-                'time_end' => $setTimeEnd,
-                'status' => 0
-            ]);
-            if($scheduledata){
-                $seatData = array();
-                $seat = $this->seat->where('room_id', $request->room_id)->get();
-                for($i = 0; $i < sizeof($seat); $i++){
-                    $dataSeat[] = ["seat_id" => $seat[$i]['id'], "schedule_id" => $scheduledata['id'], 'status' => 0];
-                }
-                $this->ticket->insert($dataSeat);
-            }
-            return response()->json([
-                'status' => 200,
-                'message' => 'Create Scheduled Movie Success',
-            ]);
-        }
+        //     $scheduledata = $this->schedule::create([
+        //         'room_id' => $request->room_id,
+        //         'movie_id' => $request->movie_id,
+        //         'date' => $request->date,
+        //         'price' => $request->price,
+        //         'time_start' => $setTimeStart,
+        //         'time_end' => $setTimeEnd,
+        //         'status' => 0
+        //     ]);
+        //     if($scheduledata){
+        //         $seatData = array();
+        //         $seat = $this->seat->where('room_id', $request->room_id)->get();
+        //         for($i = 0; $i < sizeof($seat); $i++){
+        //             $dataSeat[] = ["seat_id" => $seat[$i]['id'], "schedule_id" => $scheduledata['id'], 'status' => 0];
+        //         }
+        //         $this->ticket->insert($dataSeat);
+        //     }
+        //     return response()->json([
+        //         'status' => 200,
+        //         'message' => 'Create Scheduled Movie Success',
+        //     ]);
+        // }
 
-        return response()->json([
-            'status' => 401,
-            'message' => 'Room or movie not found',
-        ]);
+        // return response()->json([
+        //     'status' => 401,
+        //     'message' => 'Room or movie not found',
+        // ]);
     }
 
-    public function getAllSchedule(){
-        $schedules = $this->schedule->load(['room', 'movie'])->get();
 
-        foreach($schedules as $schedule){
-            $data[] = new ScheduledResource($schedule);
-        }
-        return $data;
-    }
 
     public function getSchedule($room){
         $schedules = $this->schedule->with('movie')->where('room_id', $room)->get();

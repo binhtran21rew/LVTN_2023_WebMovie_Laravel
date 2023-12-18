@@ -31,6 +31,7 @@ class MovieController extends Controller
     private $genre;
     private $schedule;
     public function __construct(Movie $movie, Cast $cast, Movie_detail $movie_detail, Genre $genre){
+
         $this->movie = $movie;
         $this->cast = $cast;
         $this->movie_detail = $movie_detail;

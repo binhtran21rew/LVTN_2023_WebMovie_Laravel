@@ -30,13 +30,6 @@ class RolePermissionController extends Controller
 
     public function getAllRole(){
         $roles = $this->role->with('permissions')->get();
-        // $per = Permission::all();
-
-        // foreach ($per as $a ){
-        //     $roles->givePermissionTo($a);
-        // }
-
-
 
         return $roles;
     }

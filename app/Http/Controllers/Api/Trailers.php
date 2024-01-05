@@ -9,6 +9,7 @@ use App\Models\Movie;
 use App\Models\Movie_detail;
 use App\Models\Trailer;
 use Exception;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class Trailers extends Controller
@@ -59,11 +60,16 @@ class Trailers extends Controller
     public function getAllTrailer(){
         $trailers = $this->trailer->load('movie')->get();
 
-        foreach($trailers as $trailer){
-            $data[] = new TrailerResource($trailer);
+
+        if($trailers->count() > 0){
+            foreach($trailers as $trailer){
+                $data[] = new TrailerResource($trailer);
+            }
+    
+            return $data;
         }
 
-        return $data;
+        return $trailers;
     }
 
 
@@ -122,13 +128,32 @@ class Trailers extends Controller
 
     public function getTrashed(){
         $trailers = $this->trailer->onlyTrashed()->get();
-        $data = [];
-        if($trailers){
+
+        if($trailers->count() > 0){
             foreach($trailers as $trailer){
                 $data[] = new TrailerResource($trailer);
             }
+            return $data;
         }
 
-        return $data;
+        return $trailers;
+
+    }
+
+    public function searchTrailer(Request $request){
+        $keyword = $request->keyword;
+        $movies = $this->movie->where('title','like' ,'%'.$keyword.'%')->get();
+        if($movies->count() > 0){
+            foreach($movies as $data){
+                $ids[] = $data->id;
+            }
+            $result = $this->trailer->load('movie')->whereIn('movie_id',$ids)->get()->map(function($d){
+                return new TrailerResource($d);
+            });;
+        }else{
+            $result = [];
+        }
+
+        return $result ;
     }
 }

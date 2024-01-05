@@ -13,11 +13,12 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Spatie\Permission\Contracts\Permission;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Traits\HasPermissions;
-use Spatie\Permission\Traits\HasRoles;
-
+use Illuminate\Http\JsonResponse;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
+use Laravel\Socialite\Facades\Socialite;
+use GuzzleHttp\Exception\ClientException;
 class AuthController extends Controller
 {
 
@@ -40,7 +41,7 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
             ]);
-    
+            $user->sendEmailVerificationNotification();
             $user_role = Role::where(['name' => 'user'])->first();
             if($user_role){
                 $user->assignRole($user_role);
@@ -51,14 +52,14 @@ class AuthController extends Controller
             DB::commit();
             return response()->json([
                 'status' => 200,
-                'message' => 'register successfully !',
+                'message' => 'Next. You have verify your email to booking ticket',
                 'data' => new UserResource(auth()->user())
             ]);
         }catch(Exception $e){
             DB::rollBack();
             return response()->json([
-                'status' => 200,
-                'message' => 'register is wrong !',
+                'status' => 401,
+                'message' => $e->getMessage(),
             ]);
         }
 
@@ -76,7 +77,7 @@ class AuthController extends Controller
     }
 
     public function user(){
-        $checkUser = $this->user->with(['booking.ticket.schedule.movie', 'booking.payment'])->find(auth()->user()->id);
+        $checkUser = $this->user->with(['booking.ticket.schedule.movie', 'booking.payment', 'booking.combofood'])->find(auth()->user()->id);
         return new AccountResource($checkUser);
     }
 
@@ -96,7 +97,6 @@ class AuthController extends Controller
                 'phone' => $request->phone
             ]);
     
-            // $user_role = Role::where(['name' => 'admin'])->first();
 
             if(isset($request->role)){
                 foreach($request->role as $role){
@@ -125,7 +125,7 @@ class AuthController extends Controller
         }
     }
 
-    public function updateAccount(Request $request){
+    public function updateRoleAccount(Request $request){
         $checkAccount = User::find($request->id);
         if($checkAccount->hasAnyRole('root_admin')){
             return response()->json([
@@ -190,15 +190,83 @@ class AuthController extends Controller
             ]);
         }
     }
-    // public function grant(){
-    //     $super = Role::create(['name' => 'super admin']);
-    //     $user = User::create([
-    //         'name' => 'AdminRoot',
-    //         'email' => 'AdminRoot@gmail.com',
-    //         'password' => bcrypt('Adminroot123')
-    //     ]);
-    //     $user->assignRole($super);
-    // }
 
+    public function getUserAccount(){
+        $user = $this->user->with('roles')->find(auth()->user()->id);
+        return $user;
 
+    }
+
+    public function updateAccount(Request $request){
+        $checkUser = $this->user->find($request->id);
+        if($checkUser){
+            try{
+                DB::beginTransaction();
+                $data = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'gender' => $request->gender
+                ];
+                $checkUser->update($data);
+                DB::commit();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'update infomation account successfully',
+                ]);
+            }catch(Exception $e){
+                DB::rollBack();
+                return response()->json([
+                    'status' => 401,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }else{
+            return response()->json([
+                'status' => 401,
+                'message' => 'Account not found',
+            ]);
+        }
+    }
+
+    public function change_password(Request $request){
+        $user = $this->user->find($request->id);
+        $checkUser = auth()->user();
+        if(Hash::check($request->old_password, $checkUser->password) && $user){
+            try{
+                DB::beginTransaction();
+                $user->update([
+                    'password' => bcrypt($request->new_password)
+                ]);
+
+                DB::commit();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'change password successfully',
+                ]);
+
+            }catch(Exception $e){
+                DB::rollBack();
+                return response()->json([
+                    'status' => 401,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+       
+        return response()->json([
+            'status' => 401,
+            'message' => 'old password not match',
+        ]);
+    }
+
+    public function searchAccount(Request $request){
+        if($request->filter === 'user'){
+            $result = $this->user->with('roles')->where('name', 'like', '%'.$request->keyword.'%')->get();
+        }else if($request->filter === 'admin'){
+            $result = $this->user->with('roles')->where('name', 'like', '%'.$request->keyword.'%')->get();
+        }
+
+        return $result;
+    }
 }

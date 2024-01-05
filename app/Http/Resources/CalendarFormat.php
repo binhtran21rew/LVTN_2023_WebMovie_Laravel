@@ -25,6 +25,7 @@ class CalendarFormat extends JsonResource
             'status' => $this->status,
             'color' => Carbon::now()->toDateString() > $this->date ? '#888686' : ($this->status === 1 ? '#ea300a' : '#68e609')  ,
             'dateNow' => $this->date,
+            'movie_price' => $this->movie->price
         ];
     }
 }

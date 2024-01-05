@@ -4,13 +4,16 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\MovieController;
 use App\Http\Controllers\Api\CastController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FoodController;
 use App\Http\Controllers\Api\Trailers;
 use App\Http\Controllers\Api\GenreController;
+use App\Http\Controllers\Api\MailController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RolePermissionController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\VerificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,10 +33,14 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'loginUser']);
 Route::post('/register', [AuthController::class, 'registerUser']);
 
+Route::post('email/verification-notification', [VerificationController::class, 'sendEmailVerification'])->middleware('auth:sanctum');
+Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
+Route::get('email/resend', [VerificationController::class, 'resend']);
+Route::get('send-mail', [MailController::class, 'sendMail']);
 // Route::prefix('web')->group(function () {
 //     Route::get('/movies/getall', [MovieController::class, 'getAll']);
 // });
-
+    Route::post('search/movie/', [MovieController::class, 'searchMovie']);
 
     Route::get('/Movie/page/{page}', [MovieController::class, 'getPage'])->name('website-user');
     Route::get('/Movie/detail/{id}', [MovieController::class, 'movieDetail']);
@@ -61,23 +68,38 @@ Route::post('/register', [AuthController::class, 'registerUser']);
 
     Route::get('Food/getAll', [FoodController::class, 'getAllFood']);
     Route::get('ComboFood/getAll', [FoodController::class, 'getAllComboFood']);
-
+    Route::get('Food/available', [FoodController::class, 'getAvailableFood']);
 
 Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('/checkLogin', function(){
         return response()->json(['message' => 'You have been logged in', 'status' => 200], 200);
     });
 
-
+    Route::get('/Account/getUser', [AuthController::class, 'getUserAccount']);
+    Route::get('/Dashboard/Account', [DashboardController::class, 'dashboardAccount']);
+    Route::get('/Dashboard/Movie', [DashboardController::class, 'dashboardMovie']);
+    Route::get('/Dashboard/Schedule', [DashboardController::class, 'dashboardSchedule']);
 
 
     //Controller Authentication ===================================================
-    Route::get('/Account/getAll', [AuthController::class, 'getAccount'])->name('admin_get-account');
-    Route::post('/Account/createAccount', [AuthController::class, 'createAccount'])->name('admin_create-account');
+    Route::group(['middleware' => ['role_or_permission:admin_create-account|admin_update-account|admin_delete-account']], function () {
+        Route::get('/Account/getAll', [AuthController::class, 'getAccount'])->name('admin_get-account');
+    });
+    Route::group(['middleware' => ['role_or_permission:admin_create-account']], function () {
+        Route::post('/Account/createAccount', [AuthController::class, 'createAccount'])->name('admin_create-account');
+    });
+    Route::group(['middleware' => ['role_or_permission:admin_update-account']], function () {
+        Route::post('/Account/updateRole', [AuthController::class, 'updateRoleAccount'])->name('admin_update-account');
+    });
+
+    Route::group(['middleware' => ['role_or_permission:admin_delete-account']], function () {
+        Route::delete('/Account/deleteAccount', [AuthController::class, 'deleteAccount'])->name('admin_delete-account');
+    });
+    Route::get('search/Account', [AuthController::class, 'searchAccount']);
+
 
 
     //Controller Movie ===========================================================
-    
     Route::group(['middleware' => ['role_or_permission:admin_create-movie']], function () {
         Route::post('/Movie/createMovie', [MovieController::class, 'createMovie'])->name('admin_create-movie');
     });
@@ -89,7 +111,10 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::get('/Movie/getTrashed/Movie', [MovieController::class, 'getTrashed'])->name('admin_delete-movie');
     });
     Route::get('/Movie/getMovie', [MovieController::class, 'getAdminMovie'])->name('admin_getAdmin-movie');
-    
+    Route::get('/search/Movie/', [MovieController::class, 'searchMovieAdmin']);
+
+
+
     //Controller Cast ============================================================
     Route::group(['middleware' => ['role_or_permission:admin_create-cast']], function () {
         Route::post('/Cast/createCast', [CastController::class, 'createCast'])->name('admin_create-cast');
@@ -101,6 +126,7 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::delete('/Cast/deleteCast', [CastController::class, 'deleteCast'])->name('admin_delete-cast');
         Route::get('/Cast/getTrashed/Cast', [CastController::class, 'getTrashed'])->name('admin_delete-cast');
     });
+    Route::get('/search/Cast/', [CastController::class, 'searchCast']);
 
     
     //Controller Trailer =========================================================
@@ -114,6 +140,9 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::delete('Trailer/deleteTrailer', [Trailers::class, 'deleteTrailer'])->name('admin_delete-trailer');
         Route::get('Trailer/getTrashed/Trailer', [Trailers::class, 'getTrashed'])->name('admin_delete-trailer');
     });
+    Route::get('/search/Trailer/', [Trailers::class, 'searchTrailer']);
+
+
     
     //Controller Genre ============================================================
     Route::group(['middleware' => ['role_or_permission:admin_create-genre']], function () {
@@ -126,7 +155,9 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::delete('/Genre/deleteGenre', [GenreController::class, 'deleteGenre'])->name('admin_delete-genre');
         Route::get('/Genre/getTrashed/Genre', [GenreController::class, 'getTrashed'])->name('admin_delete-genre');
     });
-    
+    Route::get('/search/Genre/', [GenreController::class, 'searchGenre']);
+
+
     //Controller Room =============================================================
     Route::group(['middleware' => ['role_or_permission:admin_create-room']], function () {
         Route::post('Room/createRoom', [RoomController::class, 'createRoom'])->name('admin_create-room');
@@ -138,6 +169,8 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::delete('/Room/deleteRoom', [RoomController::class, 'deleteRoom'])->name('admin_delete-room');
         Route::get('/Room/getTrashed/Room', [RoomController::class, 'getTrashed'])->name('admin_delete-room');
     });
+    Route::get('/search/Room/', [RoomController::class, 'searchRoom']);
+
 
 
     //Controller Schedule ==========================================================
@@ -167,12 +200,23 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::post('Food/updateFood', [FoodController::class, 'updateFood'])->name('admin_update-food');
         Route::post('ComboFood/updateComboFood', [FoodController::class, 'updateComboFood'])->name('admin_update-food');
     });
+    Route::group(['middleware' => ['role_or_permission:admin_delete-food']], function () {
+        Route::delete('Food/deleteFood', [FoodController::class, 'deleteFood'])->name('admin_delete-food');
+        Route::post('/Food/getTrashed/Food', [FoodController::class, 'getTrashed'])->name('admin_delete-food');
+    });
+    Route::get('/search/ComboFood/', [FoodController::class, 'searchFood']);
+
 
 
     //Controller Booking ===============================================================
     Route::group(['middleware' => ['role_or_permission:admin_getAll-booking']], function () {
         Route::get('Booking/getAll', [BookingController::class, 'getAllBookingAdmin'])->name('admin_getAll-booking');
+        Route::get('Booking/getChartData', [BookingController::class, 'getChartData'])->name('admin_getAll-booking');
+        Route::get('search/Booking/', [BookingController::class, 'searchBooking'])->name('admin_getAll-booking');
+        Route::post('Booking/ChangeBookingTicket', [BookingController::class, 'ChangeBookingTicket'])->name('admin_getAll-booking');
+
     });
+
 
 
 
@@ -197,16 +241,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    Route::post('/Payment/momo', [PaymentController::class, 'momoPayment']);
-    
+    Route::post('Account/updateAccount', [AuthController::class, 'updateAccount']);
+
+    Route::post('change_password', [AuthController::class, 'change_password']);
 });
 
 
 
 // Authorization user with role or permissions
-Route::middleware(['auth:sanctum','role_or_permission:users.list'])->group(function() {
-    Route::get('test_role', [AuthController::class, 'role']);
+Route::middleware(['auth:sanctum','verified'])->group(function() {
+    Route::post('/Payment/momo', [PaymentController::class, 'momoPayment']);
+    Route::post('/Payment/vnpay', [PaymentController::class, 'vnpayMethod']);
 
+    Route::get('test_role', function(Request $request){
+        return $request->user();
+    });
 });
 
 

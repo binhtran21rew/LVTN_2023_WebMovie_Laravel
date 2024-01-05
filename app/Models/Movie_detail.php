@@ -13,7 +13,7 @@ class Movie_detail extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'movie_detail';
-    protected $fillable = ['movie_id', 'title', 'overview', 'vote_count', 'vote_average', 'status'];
+    protected $fillable = ['movie_id', 'title', 'overview', 'vote_count', 'imdb', 'status'];
 
     public function movie(): BelongsTo{
         return $this->belongsTo(Movie::class);

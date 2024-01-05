@@ -106,4 +106,11 @@ class GenreController extends Controller
         return $genres;
     }
 
+    public function searchGenre(Request $request){
+        $keyword = $request->keyword;
+
+        $result = $this->genre->where('name','like' ,'%'.$keyword.'%')->get();
+        return $result ;
+    }
+
 }

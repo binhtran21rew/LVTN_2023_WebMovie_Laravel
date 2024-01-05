@@ -15,7 +15,7 @@ class Movie extends Model
 
     protected $table = 'movies';
 
-    protected $fillable = ['title', 'post_path', 'backdrop_path', 'release', 'time'];
+    protected $fillable = ['title', 'post_path', 'backdrop_path', 'release', 'time', 'price'];
 
     public function movie_detail(): HasOne{
         return $this->hasOne(Movie_detail::class);

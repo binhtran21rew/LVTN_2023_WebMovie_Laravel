@@ -1,0 +1,106 @@
+.Mail-Conform-Booking{
+    background-color: #9f9f9f;
+    overflow: hidden;
+
+    .form-top{
+        margin: 20px 0;
+    }
+}
+.mt-10{
+    margin-top: 25px !important;
+}
+.form-title{
+    width: 50%;
+}
+.form-title .row .col{
+    position: relative;
+}
+.img-thumbnail{
+    max-width: 60% !important;
+    padding: unset !important;
+    border-radius: 10px !important;
+}
+.form-title .row .col:first-child::after{
+    content: " ";
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    right: 0;
+    top: 0;
+    background-color: #b6b6b6;
+}
+
+.info-ticket{
+    margin-top: 15px;
+    /* & > svg{
+        margin-right: 20px;
+    }
+    & > span{
+        text-transform: capitalize;
+        font-weight: bold;
+    } */
+
+    &.food,
+    &.seat{
+        span{
+            position: relative;
+            margin-right: 20px;
+            &::after{
+                content: " ";
+                position: absolute;
+                width: 1px;
+                height: 100%;
+                right: -8px;
+                top: 0;
+                background-color: #b6b6b6;
+            }
+        }
+
+        span:last-child{
+            &::after{
+                position: unset;
+                background-color: unset;
+            }
+        }
+    }   
+}
+
+.form-footer{
+    text-transform: capitalize;
+    font-size: 25px;
+    margin-right: 15%;
+    margin-left: 20px;
+    .price{
+        display: flex;
+        strong{
+            display: block;
+            width: 200px;
+        }
+        span{
+            margin-left: 50px;
+        }
+    }
+
+    .total_price{
+        position: relative;
+        margin: 20px 0;
+        margin-bottom: 50px;
+        font-weight: bold;
+        color: red;
+
+        span{
+            color: red;
+        }
+        &::after{
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            left: 0;
+            top: -10px;
+            background-color: rgb(107, 107, 107);
+        }
+    }
+}
+
+

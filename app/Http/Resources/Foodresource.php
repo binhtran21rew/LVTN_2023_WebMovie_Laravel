@@ -21,7 +21,7 @@ class Foodresource extends JsonResource
             'detail' => $this->detail ?? '',
             'count' => $this->count ?? '',
             'image' => $this->image_path ?? '',
-            'combo' => $this->combo ?? '',
+            'food' => $this->food ?? '',
         ];
     }
 }

@@ -22,7 +22,7 @@ class BookingResource extends JsonResource
             'status' => $this->status,
             'user' => $this->user,
             'ticket' => $this->ticket,
-            'payment' => $this->payment,
+            'payment' => $this->payment ?? [],
             'food' => $this->combofood,
         ];
     }

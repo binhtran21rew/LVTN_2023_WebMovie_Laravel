@@ -53,11 +53,16 @@ class RoomController extends Controller
     public function getAll(){
         $rooms = $this->room->load('seat')->get();
 
-        foreach( $rooms as  $room){
-            $data[] = new RoomResource($room);
+
+        if($rooms->count() > 0){
+            foreach( $rooms as  $room){
+                $data[] = new RoomResource($room);
+            }
+    
+            return $data ;
         }
 
-        return $data ;
+        return $rooms;
     }
 
     public function getAvailable(){
@@ -157,6 +162,24 @@ class RoomController extends Controller
         }
 
         return $rooms;
+
+    }
+
+
+    public function searchRoom(Request $request){
+        $keyword = $request->keyword;
+        
+        $result = $this->room->load('seat')->where('name','like' ,'%'.$keyword.'%')->get();
+        if($result->count() > 0){
+            foreach($result as  $room){
+                $data[] = new RoomResource($room);
+            }
+    
+            return $data ;
+        }else{
+
+            return  $data = [] ;
+        }
 
     }
 }

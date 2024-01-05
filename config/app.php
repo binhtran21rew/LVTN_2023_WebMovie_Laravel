@@ -55,6 +55,12 @@ return [
     |
     */
 
+
+    // $today = Carbon::today()->format('Y-m-d');
+    // $time = Carbon::now()->format('h:i:s');
+    // $result = $this->schedule->where('date', '>=', $today)->where('time_start', '>=', $time)->get();
+    // return $result;
+
     'url' => env('APP_URL', 'http://localhost'),
 
     'asset_url' => env('ASSET_URL'),
@@ -71,7 +77,9 @@ return [
     */
 
     'timezone' => 'UTC',
+    // 'timezone' => 'Asia/Ho_Chi_Minh',
 
+    
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
@@ -170,6 +178,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         Barryvdh\Debugbar\ServiceProvider::class,
+        Laravel\Socialite\SocialiteServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -186,6 +195,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
         'Debugbar' => Barryvdh\Debugbar\Facades\Debugbar::class,
+        'Socialite' => Laravel\Socialite\Facades\Socialite::class,
     ])->toArray(),
 
 ];

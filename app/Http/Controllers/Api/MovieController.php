@@ -64,13 +64,13 @@ class MovieController extends Controller
                 'backdrop_path' => $uploadBackdrop,
                 'release' => $request->release,
                 'time' => $formatted_time,
+                'price' => $request->price
             ]);
             $movieDetail = $this->movie_detail->create([
                 'movie_id' => $movie['id'],
                 'title' => $movie['title'],
                 'overview' =>  $request->overview ?? '',
-                'vote_count' => 0,
-                'vote_average' => 0,
+                'imdb' => $request->imdb,
                 'status'  => $request->status
             ]);
             if($request->casts){
@@ -115,7 +115,10 @@ class MovieController extends Controller
             ]);
         }catch(Exception $e){
             DB::rollBack();
-            return $e->getMessage();
+            return response()->json([
+                'status' => 401,
+                'message' => 'Created movie failed',
+            ]);
         }
     }
 
@@ -128,7 +131,7 @@ class MovieController extends Controller
         }
         $movie = $this->movie->find($id);
 
-        if($movie){
+        if($movie->count() > 0){
             Cache::remember('movie_'.$id, 60*60*24,function() use($movie){
                 return  $movie;
             });
@@ -196,32 +199,44 @@ class MovieController extends Controller
         $newPage = (($page - 1) * $limitPerPage);
 
         $movies = $this->movie->offset($newPage)->limit($limitPerPage)->get();
-        foreach($movies as $movie){
-            $data[] = new MovieResource($movie);
+
+
+        if($movies->count() > 0){
+            foreach($movies as $movie){
+                $data[] = new MovieResource($movie);
+            }
+    
+            return $data;
+
         }
 
-        return $data;
+        return $movies;
     }
 
 
 
     public function getMovieContent($type){
-        $cache = Cache::get('movie_content_'.$type);
+        // $cache = Cache::get('movie_content_'.$type);
 
-        if($cache !== null){
-            return $cache;
-        }
+        // if($cache !== null){
+        //     return $cache;
+        // }
 
-        Cache::remember('movie_content_'.$type, 60*60*24, function() use ($type){
-            return $this->movie->withWhereHas('movie_detail', fn($query) =>
-                $query->where('status', $type)
-            )->limit(8)->get()->map(function($movie){
-                return new MovieResource($movie);
-            });
+        // Cache::remember('movie_content_'.$type, 60*60*24, function() use ($type){
+        //     return $this->movie->withWhereHas('movie_detail', fn($query) =>
+        //         $query->where('status', $type)
+        //     )->limit(8)->get()->map(function($movie){
+        //         return new MovieResource($movie);
+        //     });
+        // });
+        
+
+        // return $cache;
+        return $this->movie->withWhereHas('movie_detail', fn($query) =>
+            $query->where('status', $type)
+        )->limit(8)->get()->map(function($movie){
+            return new MovieResource($movie);
         });
-
-        return $cache;
-
         // Cache::delete('movie_content_'.$type);
 
     }
@@ -283,6 +298,10 @@ class MovieController extends Controller
             }
         }catch(Exception $e){
             DB::rollBack();
+            return  response()->json([
+                'status' => 401,
+                'message' => 'Update movie failed'
+            ]);
         }
     }
 
@@ -408,6 +427,59 @@ class MovieController extends Controller
         $movies = $this->movie_detail->onlyTrashed()->get();
     
         return $movies;
+    }
+
+    public function searchMovie(Request $request){
+        if($request->type === 'movie'){
+            $data = $this->movie->where('title', 'like' ,'%'.$request->input('query').'%')->get();
+            return $data;
+        }
+    }
+
+    public function searchMovieAdmin(Request $request){
+
+        if($request->filter === 'title'){
+            $result =  $this->movie_detail
+            ->load(['movie.movie_cast', 'movie_genre'])
+            ->where('title', 'like' ,'%'.$request->keyword.'%')
+            ->get()->map(function($d){
+                return new MovieDetailResource($d);
+            });
+        }else if($request->filter === 'setup'){
+            $schedules = Schedule::all();
+            foreach($schedules as $data){
+                $ids[] = $data->movie_id;
+            }
+
+            $result =  $this->movie_detail
+                ->load(['movie.movie_cast', 'movie_genre'])
+                ->where('title', 'like' ,'%'.$request->keyword.'%')
+                ->whereIn('movie_id', $ids)->get()->map(function($d){
+                    return new MovieDetailResource($d);
+                });
+        }else if($request->filter === 'unsetup'){
+            $schedules = Schedule::all();
+            foreach($schedules as $data){
+                $ids[] = $data->movie_id;
+            }
+
+            $result =  $this->movie_detail
+                ->load(['movie.movie_cast', 'movie_genre'])
+                ->where('title', 'like' ,'%'.$request->keyword.'%')
+                ->whereNotIn('movie_id', $ids)->get()->map(function($d){
+                    return new MovieDetailResource($d);
+                });
+        }else{
+            $result =  $this->movie_detail
+            ->load(['movie.movie_cast', 'movie_genre'])
+            ->where('status', $request->filter)
+            ->where('title', 'like' ,'%'.$request->keyword.'%')
+            ->get()->map(function($d){
+                return new MovieDetailResource($d);
+            });
+        }
+       
+        return  $result;
     }
 
 }

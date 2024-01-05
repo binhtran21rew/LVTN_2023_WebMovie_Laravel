@@ -131,4 +131,11 @@ class CastController extends Controller
     
         return $casts;
     }
+
+    public function searchCast(Request $request){
+        $keyword = $request->keyword;
+
+        $result = $this->cast->where('name','like' ,'%'.$keyword.'%')->get();
+        return $result ;
+    }
 }

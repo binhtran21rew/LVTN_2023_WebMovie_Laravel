@@ -114,8 +114,6 @@ class ScheduleController extends Controller
         ]);
     }
 
-
-
     public function getSchedule($room){
         $schedules = $this->schedule->with('movie')->where('room_id', $room)->get();
         if(sizeof($schedules) > 0){
@@ -209,7 +207,6 @@ class ScheduleController extends Controller
     }
 
 
-
     public function getBookingSchedule($movie){
 
         $today = Carbon::now()->toDateString();
@@ -218,8 +215,8 @@ class ScheduleController extends Controller
             return [];
         }
 
-        $checkSchedule = $this->schedule->load('movie')->where('movie_id', $movie)->where('date', '>=', $today)->where('status', 0)->get();
-        return $checkSchedule;
+        $checkSchedule = $this->schedule->load('movie')->where('movie_id', $movie)->where('date', '>=', $today)->where('status', 0)->get()->sortby('time_start')->sortby('date');
+        return $checkSchedule->values()->all();
     }
 
 

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\WebMail ;
+use Carbon\Carbon;
 use Exception;
 class BookingController extends Controller
 {
@@ -64,7 +65,7 @@ class BookingController extends Controller
             }
             $price = 0;
             $food = [];
-        
+            $today = Carbon::now()->toDateString();
             if(isset($request->listFood)){
                 foreach($request->listFood as $key=>$item){
                     $price += $item['price'];
@@ -75,7 +76,7 @@ class BookingController extends Controller
             $dataBooking = [
                 'user_id' => auth('sanctum')->user()->id,
                 'count' => $request->count,
-                'date' => $request->date,
+                'date' => $today,
                 'total_price' => $request->total_price,
                 'status' => $request->status
             ];
@@ -143,6 +144,67 @@ class BookingController extends Controller
        
 
     }
+    public function adminBookingTicket(Request $request){
+        $checkTicket = $this->ticket->whereIn('id',  $request->ticket)->where('status', 1)->where('booking_id', '<>',null)->get()->count();
+        if($checkTicket > 0){
+            return response()->json([
+                'status' => 401,
+                'message' => 'This ticket is sold out',
+            ]);
+        }
+        try{
+            DB::beginTransaction();
+            $today = Carbon::now()->toDateString();
+
+            $dataBooking = [
+                'user_id' => auth('sanctum')->user()->id,
+                'count' => $request->count,
+                'date' => $today,
+                'total_price' => $request->total_price,
+                'status' => $request->status
+            ];
+            $loadBooking = $this->booking->create($dataBooking);
+    
+            if(isset($request->listFood)){
+                foreach($request->listFood as $key=>$item){
+                    for($i = 0; $i < $item['value']; $i++){
+                        $loadBooking->combofood()->attach($key);
+                    }
+                    $findFood = $this->combo->find($key);
+                    $findFood->decrement('count', $item['value']);
+                }
+            }
+            $id_payment = auth('sanctum')->user()->id.'_tt_'.rand(1, 999999);
+            $dataPayment = [
+                'id' => $id_payment,
+                'booking_id' => $loadBooking->id,
+                'date' => $request->date,
+                'time' => $request->time,
+                'price' => $request->total_price,
+                'type' => $request->type,
+            ];
+            $this->payment->create($dataPayment);
+            
+            
+            $dataTicket = [
+                'booking_id' => $loadBooking->id,
+                'status' => 1
+            ];
+            $this->ticket->whereIn('id',  $request->ticket)->where('status', 0)->update($dataTicket);
+            DB::commit();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booking successfully',
+            ]);
+        }catch(Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 401,
+                'message' => $e->getMessage(),
+            ]);
+            
+        }
+    }
 
     public function ChangeBookingTicket(Request $request){
         $checkBooking = $this->booking->find($request->id_booking);
@@ -202,11 +264,91 @@ class BookingController extends Controller
     }
 
     public function getChartData(Request $request){
-        if($request->filter === 'total_price'){
-            $data = $this->booking->with('ticket')->get();
-        }else if($request->filter === 'movie'){
-            $data = $this->booking->with('ticket.schedule.movie')->get();
+
+        if($request->time !== 'input'){
+            $today = Carbon::now()->toDateString();
+            $month = Carbon::now()->format('m');
+            $year = Carbon::now()->format('Y');
+            if($request->filter === 'total_price'){
+                if($request->time === 'all'){
+                    $data = $this->booking->with('ticket')->get();
+    
+                }else if($request->time === 'day'){
+                    $data = $this->booking->with('ticket')->where('date', $today)->get();
+                    
+                }else if($request->time === 'month'){
+                    $data = $this->booking->with('ticket')->whereMonth('date', $month)->whereYear('date', $year)->get();
+    
+                }else{
+                    $data = $this->booking->with('ticket')->whereYear('date', $year)->get();
+    
+                }
+            }else if($request->filter === 'movie'){
+                if($request->time === 'all'){
+                    $data = $this->booking->with('ticket.schedule.movie')->get();
+    
+                }else if($request->time === 'day'){
+                    $data = $this->booking->with('ticket.schedule.movie')->where('date', $today)->get();
+                    
+                }else if($request->time === 'month'){
+                    $data = $this->booking->with('ticket.schedule.movie')->whereMonth('date', $month)->whereYear('date', $year)->get();
+    
+                }else{
+                    $data = $this->booking->with('ticket.schedule.movie')->whereYear('date', $year)->get();
+    
+                }
+            }else if($request->filter === 'room'){
+                if($request->time === 'all'){
+                    $data = $this->booking->with('ticket.schedule.room')->get();
+    
+                }else if($request->time === 'day'){
+                    $data = $this->booking->with('ticket.schedule.room')->where('date', $today)->get();
+                    
+                }else if($request->time === 'month'){
+                    $data = $this->booking->with('ticket.schedule.room')->whereMonth('date', $month)->whereYear('date', $year)->get();
+    
+                }else{
+                    $data = $this->booking->with('ticket.schedule.room')->whereYear('date', $year)->get();
+    
+                }
+            }
+        }else{
+            $type = explode('/', $request->option)[0];
+            $time = explode('/', $request->option)[1];
+
+            if($request->filter === 'total_price'){
+                if($type === 'date'){
+                    $data = $this->booking->with('ticket')->where('date', $time)->get();
+                }else if($type === 'month'){
+                    $year =  explode('-', $time)[0];
+                    $month =  explode('-', $time)[1];
+                    $data = $this->booking->with('ticket')->whereMonth('date', $month)->whereYear('date', $year)->get();
+                }else{
+                    $data = $this->booking->with('ticket')->whereYear('date', $time)->get();
+                }
+            }else if($request->filter === 'movie'){
+                if($type === 'date'){
+                    $data = $this->booking->with('ticket.schedule.movie')->where('date', $time)->get();
+                }else if($type === 'month'){
+                    $year =  explode('-', $time)[0];
+                    $month =  explode('-', $time)[1];
+                    $data = $this->booking->with('ticket.schedule.movie')->whereMonth('date', $month)->whereYear('date', $year)->get();
+                }else{
+                    $data = $this->booking->with('ticket.schedule.movie')->whereYear('date', $time)->get();
+                }
+            }else if($request->filter === 'room'){
+                if($type === 'date'){
+                    $data = $this->booking->with('ticket.schedule.room')->where('date', $time)->get();
+                }else if($type === 'month'){
+                    $year =  explode('-', $time)[0];
+                    $month =  explode('-', $time)[1];
+                    $data = $this->booking->with('ticket.schedule.room')->whereMonth('date', $month)->whereYear('date', $year)->get();
+                }else{
+                    $data = $this->booking->with('ticket.schedule.room')->whereYear('date', $time)->get();
+                }
+            }
         }
+
         return $data;
     }
 

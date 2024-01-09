@@ -3,12 +3,15 @@
 namespace App\Console;
 
 use App\Http\Controllers\Api\MovieController;
+use App\Models\Booking;
 use App\Models\Movie;
+use App\Models\Ticket;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -18,18 +21,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
-        $today = Carbon::now()->toDateString();
-        $schedule->call(function() use ($today) {
-            $data = DB::table('movies')
-            ->join('movie_detail', 'movies.id', '=', 'movie_detail.movie_id')
-            ->join('schedules', 'movies.id', '=', 'schedules.movie_id')
-            ->select('movies.id', 'movie_detail.status', 'schedules.date')
-            ->where('movie_detail.status', '0')
-            ->where('schedules.date', $today)
-            ->update(['movie_detail.status' => 1]);
 
-            Cache::delete('movie_content_1');
-        })->everySecond();
+        $schedule->command('app:change-status-movie-schedule')->daily();
+
+        $schedule->command('app:change-status-ticket-booking')->everyFiveMinutes();
     }
 
     /**

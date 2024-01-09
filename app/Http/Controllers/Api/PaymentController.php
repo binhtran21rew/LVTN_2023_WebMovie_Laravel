@@ -56,8 +56,10 @@ class PaymentController extends Controller
         $orderInfo = "Thanh toán qua MoMo";
         $amount = $request->total_price;
         $orderId = time() .'-'.$random;
-        $redirectUrl = "http://localhost:3000/order/success";
-        $ipnUrl = "http://localhost:3000/";
+        // $redirectUrl = "http://localhost:3000/order/success";
+        // $ipnUrl = "http://localhost:3000/";
+        $redirectUrl = "https://bkshop.site/order/success";
+        $ipnUrl = "https://bkshop.site/";
         // $extraData =  $request->total_price. ' ' . $request->date. ' '.$request->count. ' '.`{$request->ticket}`;
         $extraData= $dataPayment;
 
@@ -109,7 +111,9 @@ class PaymentController extends Controller
         ] ;
         $code_cart = rand(0,9999);
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = "http://localhost:3000/order/success";
+        // $vnp_Returnurl = "http://localhost:3000/order/success";
+        $vnp_Returnurl = "https://bkshop.site/order/success";
+
         $vnp_TmnCode = "L58E60MY";//Mã website tại VNPAY 
         $vnp_HashSecret = "IFSXLZSUZSPASOWUYFHEJWQZNEUAKPJP"; //Chuỗi bí mật
 

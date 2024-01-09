@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Psr\Http\Message\RequestInterface;
 
 class RoomController extends Controller
 {
@@ -64,7 +65,10 @@ class RoomController extends Controller
 
         return $rooms;
     }
-
+    public function getRoom($id){
+        $data = $this->room->load('seat')->find($id);
+        return new RoomResource($data);
+    }
     public function getAvailable(){
         $rooms = $this->room->where('status', '0')->get();
 
@@ -93,7 +97,28 @@ class RoomController extends Controller
             'message' => 'Room not found'
         ]);
     }
+    public function changeRoom(Request $request){
+        try{
+            DB::beginTransaction();
+            if($request->seats){
+                foreach($request->seats as $key => $value){
+                    $this->seat->where('id', $key)->update(['position' => $value]);
+                }
+            }
+            DB::commit();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Update position seat successfully !',
+            ]);
+        }catch(Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 401,
+                'message' => 'Update position seat failed !',
+            ]);
+        }
 
+    }
     public function deleteRoom(Request $request){
         $today = Carbon::now()->toDateString();
 

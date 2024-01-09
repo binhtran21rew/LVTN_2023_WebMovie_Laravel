@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MovieRequest;
 use App\Http\Resources\MovieDetailResource;
 use App\Http\Resources\MovieResource;
+use App\Models\Booking;
 use App\Models\Cast;
+use App\Models\ComboFood;
 use App\Models\Genre;
 use App\Models\Movie;
 use App\Models\Movie_cast;
 use App\Models\Movie_detail;
 use App\Models\Schedule;
+use App\Models\Ticket;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -30,13 +33,14 @@ class MovieController extends Controller
     private $movie_detail;
     private $genre;
     private $schedule;
-    public function __construct(Movie $movie, Cast $cast, Movie_detail $movie_detail, Genre $genre){
-
+    private $booking;
+    public function __construct(Movie $movie, Cast $cast, Movie_detail $movie_detail, Genre $genre, Schedule $schedule, Booking $booking){
         $this->movie = $movie;
         $this->cast = $cast;
         $this->movie_detail = $movie_detail;
         $this->genre = $genre;
-
+        $this->schedule = $schedule;
+        $this->booking = $booking;
     }
     public function createMovie(MovieRequest $request){
         try{
@@ -100,13 +104,6 @@ class MovieController extends Controller
                 }
                 $movieDetail->movie_genre()->attach($genreID);
             }
-
-            Cache::delete('allMovieAdmin');
-            Cache::remember('allMovieAdmin', 60*60*24, function(){
-                return $this->movie_detail->load(['movie.movie_cast', 'movie_genre'])->get()->map(function($d){
-                    return new MovieDetailResource($d);
-                });
-            });
     
             DB::commit();
             return response()->json([
@@ -122,20 +119,18 @@ class MovieController extends Controller
         }
     }
 
-
+    public function getMovieSchedule(){
+        $today = Carbon::now()->toDateString();
+        $schedule = $this->schedule->where('date', '>=' , $today)->get('movie_id');
+        $movie = $this->movie->whereIn('id', $schedule)->get();
+        return $movie;
+    }
     public function getMovieId($id){
-        $cache = Cache::get('movie_'.$id);
-        
-        if($cache !== null){
-            return $cache;
-        }
+
         $movie = $this->movie->find($id);
 
         if($movie->count() > 0){
-            Cache::remember('movie_'.$id, 60*60*24,function() use($movie){
-                return  $movie;
-            });
-            return $cache;
+            return  $movie;
         }
         return  response()->json([
             'status' => 404,
@@ -143,56 +138,20 @@ class MovieController extends Controller
         ]);
     }
     public function movieDetail($id){
-        $cache = Cache::get('movie_detail_'.$id);
-
-        if($cache !== null){
-            return $cache;
-        }
         $detail = $this->movie_detail->load(['movie', 'movie_genre'])->where('id', $id)->first();
-        if($detail){
-            Cache::remember('movie_detail_'.$id, 60*60*24, function() use ($detail){
-                return new MovieDetailResource($detail);
-            });
-            return $cache;
-        }
-        return  response()->json([
-            'status' => 404,
-            'message' => 'Not found movie'
-        ]);
+        return new MovieDetailResource($detail);
     }
     public function getAdminMovie(){
-
-        $cache = Cache::get('allMovieAdmin');
-
-        if($cache !== null){
-            return $cache;
-        }
-        
-        Cache::remember('allMovieAdmin', 60*60*24, function(){
-            return $this->movie_detail->load(['movie.movie_cast', 'movie_genre'])->get()->map(function($d){
-                return new MovieDetailResource($d);
-            });
+        return $this->movie_detail->load(['movie.movie_cast', 'movie_genre'])->get()->map(function($d){
+            return new MovieDetailResource($d);
         });
-
-        return $cache;
-        // Cache::delete('allMovieAdmin');
     }
     public function getAll(){
-        $cache = Cache::get('allMovieShow');
-
-        if($cache !== null){
-            return $cache;
-        }
-        Cache::remember('allMovieShow', 60*60*24, function(){
-            return $this->movie->withWhereHas('movie_detail', fn($query) => 
-                $query->where('status', 1)
-            )->get()->map(function($movie){
-                return new MovieResource($movie);
-            });
+        return $this->movie->withWhereHas('movie_detail', fn($query) => 
+            $query->where('status', 1)
+        )->get()->map(function($movie){
+            return new MovieResource($movie);
         });
-        return $cache;
-
-
     }
     public function getPage($page){
         $limitPerPage = 6;
@@ -213,32 +172,12 @@ class MovieController extends Controller
         return $movies;
     }
 
-
-
     public function getMovieContent($type){
-        // $cache = Cache::get('movie_content_'.$type);
-
-        // if($cache !== null){
-        //     return $cache;
-        // }
-
-        // Cache::remember('movie_content_'.$type, 60*60*24, function() use ($type){
-        //     return $this->movie->withWhereHas('movie_detail', fn($query) =>
-        //         $query->where('status', $type)
-        //     )->limit(8)->get()->map(function($movie){
-        //         return new MovieResource($movie);
-        //     });
-        // });
-        
-
-        // return $cache;
         return $this->movie->withWhereHas('movie_detail', fn($query) =>
             $query->where('status', $type)
         )->limit(8)->get()->map(function($movie){
             return new MovieResource($movie);
         });
-        // Cache::delete('movie_content_'.$type);
-
     }
 
 
@@ -352,13 +291,6 @@ class MovieController extends Controller
                     DB::beginTransaction();
                         $isSoftDeleteMovie->restore();
                         $isSoftDeleteDetail->restore();
-
-                        Cache::delete('allMovieAdmin');
-                        Cache::remember('allMovieAdmin', 60*60*24, function(){
-                            return $this->movie_detail->load(['movie.movie_cast', 'movie_genre'])->get()->map(function($d){
-                                return new MovieDetailResource($d);
-                            });
-                        });
                     DB::commit();
                     return response()->json([
                         'status' => 200,
@@ -400,12 +332,6 @@ class MovieController extends Controller
                 $getCast->delete();
                 $getDetailGenres->delete();
     
-                Cache::delete('allMovieAdmin');
-                Cache::remember('allMovieAdmin', 60*60*24, function(){
-                    return $this->movie_detail->load(['movie.movie_cast', 'movie_genre'])->get()->map(function($d){
-                        return new MovieDetailResource($d);
-                    });
-                });
                 DB::commit();
                 return response()->json([
                     'status' => 200,

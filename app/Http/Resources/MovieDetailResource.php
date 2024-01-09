@@ -28,6 +28,7 @@ class MovieDetailResource extends JsonResource
             'status' => $this->status,
             'genres' => $this->movie_genre,
             'casts' => $this->movie->movie_cast ?? null,
+            'imdb' => $this->imdb
         ];
     }
 }

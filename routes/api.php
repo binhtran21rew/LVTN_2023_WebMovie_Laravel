@@ -47,7 +47,7 @@ Route::get('send-mail', [MailController::class, 'sendMail']);
     Route::get('/Movie/getAll', [MovieController::class, 'getAll']);
     Route::get('/Movie/getContent/{type}', [MovieController::class, 'getMovieContent']);
     Route::get('/Movie/getMovie/{id}', [MovieController::class, 'getMovieId']);
-
+    Route::get('/Movie/getSchedule',  [MovieController::class, 'getMovieSchedule']);
 
     Route::get('/Cast/detail/{id}',[CastController::class, 'detail']);
     Route::get('/Cast/getAll', [CastController::class, 'getAll']);
@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('/Dashboard/Account', [DashboardController::class, 'dashboardAccount']);
     Route::get('/Dashboard/Movie', [DashboardController::class, 'dashboardMovie']);
     Route::get('/Dashboard/Schedule', [DashboardController::class, 'dashboardSchedule']);
+    Route::post('/Booking/admin/BookingTicket', [BookingController::class, 'adminBookingTicket']);
 
 
     //Controller Authentication ===================================================
@@ -106,7 +107,7 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::group(['middleware' => ['role_or_permission:admin_update-movie']], function () {
         Route::post('/Movie/updateMovie', [MovieController::class, 'updateMovie'])->name('admin_update-movie');
     });
-    Route::group(['middleware' => ['role_or_permission:admin_delete-movies']], function () {
+    Route::group(['middleware' => ['role_or_permission:admin_delete-movie']], function () {
         Route::delete('/Movie/deleteMovie', [MovieController::class, 'deleteMovie'])->name('admin_delete-movie');
         Route::get('/Movie/getTrashed/Movie', [MovieController::class, 'getTrashed'])->name('admin_delete-movie');
     });
@@ -170,6 +171,9 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::get('/Room/getTrashed/Room', [RoomController::class, 'getTrashed'])->name('admin_delete-room');
     });
     Route::get('/search/Room/', [RoomController::class, 'searchRoom']);
+    Route::get('Room/getRoom/{id}', [RoomController::class, 'getRoom']);
+    Route::post('Room/change_room', [RoomController::class, 'changeRoom']);
+
 
 
 
@@ -188,7 +192,6 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::group(['middleware' => ['role_or_permission:admin_getAll-schedule|admin_get-schedule']], function () {
         Route::get('Schedule/getSchedule/{room}', [ScheduleController::class, 'getSchedule'])->name('admin_get-schedule');
     });
-
 
 
     //Controller Food ================================================================
@@ -216,8 +219,6 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
         Route::post('Booking/ChangeBookingTicket', [BookingController::class, 'ChangeBookingTicket'])->name('admin_getAll-booking');
 
     });
-
-
 
 
     //Controller RolePermission

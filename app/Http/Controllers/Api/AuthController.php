@@ -28,9 +28,15 @@ class AuthController extends Controller
     }
     public function loginUser(LoginRequest $request){
         if(!Auth::attempt($request->only('email', 'password'))){
-            Helper::sendError('Email or Password is wrong', [] ,401);
+            return response()->json([
+                'status' => 401,
+                'message' => 'Email or Password is wrong',
+            ]); 
         }
-        return new UserResource(auth()->user());
+        return response()->json([
+            'status' => 200,
+            'data' => new UserResource(auth()->user())
+        ]);
     }
 
     public function registerUser(RegisterRequest $request){

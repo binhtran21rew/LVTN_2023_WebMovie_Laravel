@@ -23,12 +23,11 @@ class MovieDetailResource extends JsonResource
             'overview' => $this->overview,
             'time' => $this->movie->time,
             'release' => $this->movie->release,
-            'vote_count' => $this->vote_count,
-            'vote_average' => $this->vote_average,
             'status' => $this->status,
             'genres' => $this->movie_genre,
             'casts' => $this->movie->movie_cast ?? null,
-            'imdb' => $this->imdb
+            'imdb' => $this->imdb,
+            'price' => $this->movie->price
         ];
     }
 }
